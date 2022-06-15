@@ -4,6 +4,7 @@ import dotenv from "dotenv";
 import cors from "cors";
 import qrcode from "qrcode-terminal";
 import fs from "fs";
+import path from "path";
 
 dotenv.config();
 
@@ -38,7 +39,7 @@ const client = new Client({
 });
 
 if (fs.existsSync(SESSION_FILE_PATH)) {
-    fs.rmSync(SESSION_FILE_PATH, { recursive: true });
+    fs.rmSync(SESSION_FILE_PATH, { recursive: true, force: true });
     console.log("Whatsapp restoring session...");
 }
 
