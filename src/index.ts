@@ -33,7 +33,7 @@ const client = new Client({
     },
     takeoverOnConflict: true,
     takeoverTimeoutMs: 1000,
-    qrMaxRetries: 30000,
+    qrMaxRetries: 10000,
     authStrategy: authWA(SESSION_CLIENT, SESSION_FILE_PATH),
 });
 
