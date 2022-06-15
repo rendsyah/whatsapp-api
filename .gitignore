@@ -6,6 +6,9 @@ yarn-debug.log*
 yarn-error.log*
 lerna-debug.log*
 
+# Session
+session
+
 # Json
 package-lock.json
 
@@ -69,8 +72,7 @@ typings/
 .yarn-integrity
 
 # dotenv environment variables file
-# .env
-.env.test
+.env
 
 # parcel-bundler cache (https://parceljs.org/)
 .cache
