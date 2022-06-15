@@ -4,7 +4,6 @@ import dotenv from "dotenv";
 import cors from "cors";
 import qrcode from "qrcode-terminal";
 import fs from "fs";
-import path from "path";
 
 dotenv.config();
 
