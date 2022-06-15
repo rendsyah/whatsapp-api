@@ -31,9 +31,15 @@ const client = new Client({
         args: ["--no-sandbox"],
     },
     takeoverOnConflict: true,
-    takeoverTimeoutMs: 10,
+    takeoverTimeoutMs: 1000,
+    qrMaxRetries: 30000,
     authStrategy: authWA(SESSION_CLIENT, SESSION_FILE_PATH),
 });
+
+if (fs.existsSync(SESSION_FILE_PATH)) {
+    fs.rmSync(SESSION_FILE_PATH, { recursive: true });
+    console.log("Whatsapp restoring session...");
+}
 
 client.on("qr", (qr) => {
     console.log("Whatsapp QR Code received");
