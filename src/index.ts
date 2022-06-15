@@ -21,6 +21,7 @@ const PROGRAM_NAME = process.env.PROGRAM_NAME;
 const SESSION_CLIENT = process.env.SESSION_CLIENT ?? "";
 const SESSION_FILE_PATH = process.env.SESSION_FILE_PATH ?? "";
 
+app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
