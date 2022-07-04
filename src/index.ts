@@ -4,16 +4,19 @@ import dotenv from "dotenv";
 import cors from "cors";
 import qrcode from "qrcode-terminal";
 import fs from "fs";
+import appRoot from "app-root-path";
 
 dotenv.config();
 
+// LOGGER
+import { logger } from "./config/logger";
+
 // SERVICES
 import { authWA } from "./services/auth/authWA";
-import { broadcastMessageService } from "./services/whatsapp/send/broadcastMessageService";
-import { validationService } from "./services/whatsapp/send/validationService";
+import { validationService } from "./services/whatsapp/validationService";
 
 // LIBARY
-import { replaceMessage, replaceHp } from "./lib/baseFunctions";
+import { validateRequestParams, validateRequestHp, validateRequestBuffer, validateGenerateError } from "./lib/baseFunctions";
 
 const app = express();
 
@@ -29,8 +32,6 @@ const SESSION_FILE_PATH = process.env.SESSION_FILE_PATH ?? "";
 const API_VALIDATION = process.env.API_VALIDATION ?? "";
 const API_CHATBOT = process.env.API_CHATBOT ?? "";
 
-const IS_ACTIVE = process.env.IS_ACTIVE;
-
 app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
@@ -40,116 +41,82 @@ const client = new Client({
     puppeteer: {
         headless: true,
     },
-    takeoverTimeoutMs: 30000,
+    takeoverTimeoutMs: 10000,
     qrMaxRetries: 10000,
     authStrategy: authWA(SESSION_CLIENT, SESSION_FILE_PATH),
 });
 
 // WHATSAPP RESTORING AUTH SESSION
 if (fs.existsSync(SESSION_FILE_PATH)) {
-    fs.rmSync(SESSION_FILE_PATH, { recursive: true, force: true });
-    console.log("Whatsapp restoring session...");
+    logger.info("Whatsapp restoring session...");
 }
 
 // WHATSAPP GENERATE QR CODE
 client.on("qr", (qr) => {
-    console.log("Whatsapp QR Code received");
+    logger.info("Whatsapp QR Code received");
     qrcode.generate(qr, { small: true });
 });
 
 // WHATSAPP CONNECT
 client.on("ready", async () => {
     const whatsappVersion = await client.getWWebVersion();
-    console.log("Whatsapp is connected!");
-    console.log(`Whatsapp version ${whatsappVersion}`);
+    logger.info("Whatsapp is connected!");
+    logger.info(`Whatsapp version ${whatsappVersion}`);
 });
 
 // WHATSAPP AUTH SESSION
 client.on("authenticated", () => {
-    console.log("Whatsapp authentication success!");
+    logger.info("Whatsapp authentication success!");
 });
 
 // WHATSAPP GET MESSAGE
 client.on("message", async (message) => {
-    // STORE REQUEST DATA
-    const dataMessage = await message.getContact();
-    const dataSender = "";
-    const dataMedia = "";
-    const dataReceived = "";
+    try {
+        // STORE REQUEST DATA
+        const dataMessage = validateRequestBuffer(message.body, "encode");
+        const dataSender = validateRequestParams(message.from, "num");
+        const dataMedia = validateRequestParams("300", "num");
+        const dataRcvdTime = validateRequestParams(new Date(), "rcvdTime");
 
-    console.log({
-        message: await message.getContact(),
-    });
+        // REQUEST DATA VALIDATION
+        const requestValidation = {
+            message: dataMessage,
+            sender: dataSender,
+            media: dataMedia,
+            rcvdTime: dataRcvdTime,
+            sessionId: dataMessage,
 
-    switch (IS_ACTIVE) {
-        case "1":
-            // REQUEST DATA VALIDATION
-            const requestValidation = {
-                message: dataMessage,
-                sender: dataSender,
-                media: dataMedia,
-                received: dataReceived,
+            // API VALIDATION URL
+            url: API_VALIDATION,
+        };
 
-                // API VALIDATION URL
-                url: API_VALIDATION,
-            };
+        const responseValidation: any = await validationService(requestValidation);
 
-            await validationService(requestValidation);
-
-        case "2":
-            // REQUEST DATA CHATBOT
-            const requestChatBot = {
-                // API CHATBOT URL
-                url: API_CHATBOT,
-            };
+        if (responseValidation.status === 200) {
+            const message = responseValidation?.message;
+            client.sendMessage(validateRequestHp(dataSender, "waGateway"), message);
+        }
+    } catch (error: any) {
+        validateGenerateError(error);
     }
 });
 
 // WHATSAPP CONNECTION
 client.on("change_state", (state) => {
-    console.log("Whatsapp connection", state);
+    logger.info("Whatsapp connection", state);
 });
 
 // WHATSAPP DISCONNECT
-client.on("disconnected", (reason) => {
-    console.log("Whatsapp is disconnected!", reason);
-    client.destroy();
+client.on("disconnected", async (reason) => {
+    logger.info("Whatsapp is disconnected!", reason);
+    await client.destroy();
 });
 
 // WHATSAPP INITALIZE
 client.initialize();
 
-// API GET
-app.get("/whatsapp/send", async (req: Request, res: Response, next: NextFunction) => {
-    try {
-        const dataBroadcastMessage = await broadcastMessageService();
-        const { dataNasabah, message } = dataBroadcastMessage;
-
-        if (dataNasabah.length < 1 && !message) {
-            return res.status(400).send({ message: "bad request!" });
-        }
-
-        for (let i = 0; i < dataNasabah.length; i++) {
-            const changeMessage = replaceMessage(message, dataNasabah[i].name);
-            const changeHp = replaceHp(dataNasabah[i].hp);
-            const media = MessageMedia.fromFilePath("./images/gsk.jpeg");
-
-            await client.sendMessage(changeHp, changeMessage, { media });
-        }
-
-        return res.status(201).send({
-            message: "success",
-        });
-    } catch (error) {
-        next(error);
-    }
-});
-
-// API POST
-app.post("");
-
 // MIDDLEWARE RESPONSE ERROR
 app.use((err: any, req: Request, res: Response, next: NextFunction) => res.status(500).send({ message: "internal server error!" }));
 
 // LISTENING API
-app.listen(PROGRAM_PORT, () => console.log(`${PROGRAM_NAME} is connected!`));
+app.listen(PROGRAM_PORT, () => logger.info(`${PROGRAM_NAME} is connected!`));

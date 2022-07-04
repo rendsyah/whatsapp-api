@@ -7,11 +7,12 @@ export const validationService = ({ ...request }) => {
                 message: request.message,
                 sender: request.sender,
                 media: request.media,
-                received: request.received,
+                rcvdTime: request.rcvdTime,
+                sessionId: request.sessionId,
             };
 
-            // const response = axios.post(request.url, body);
-            // return resolve(response);
+            const response = await axios.post(request.url, body);
+            return resolve(response.data);
         } catch (error) {
             reject(error);
         }
