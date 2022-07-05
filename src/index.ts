@@ -93,11 +93,11 @@ client.on("message", async (message) => {
         const responseValidation: any = await validationService(requestValidation);
 
         if (responseValidation.status === 200) {
-            const message = responseValidation?.message;
+            const message = responseValidation.data?.message;
             client.sendMessage(validateRequestHp(dataSender, "waGateway"), message);
         }
     } catch (error: any) {
-        validateGenerateError(error);
+        validateGenerateError(error.message, error.status);
     }
 });
 
