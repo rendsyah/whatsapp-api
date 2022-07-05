@@ -12,7 +12,7 @@ export const validationService = ({ ...request }) => {
             };
 
             const response = await axios.post(request.url, body);
-            return resolve(response.data);
+            return resolve(response);
         } catch (error) {
             reject(error);
         }
