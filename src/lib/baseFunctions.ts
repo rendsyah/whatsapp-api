@@ -53,7 +53,7 @@ export const validateRequestBuffer = (request: any, type: string): string => {
 
     switch (type) {
         case "encode":
-            return Buffer.from(request).toString("base64").toUpperCase();
+            return Buffer.from(request).toString("base64");
         case "decode":
             return Buffer.from(request, "base64").toString("ascii").toUpperCase().trim();
 
@@ -78,8 +78,8 @@ export const validateRequestHp = (request: any, type: string): string => {
             if (checkNumberHp === "62") return request;
             return request.replace(checkNumberHp, `628`);
         case "waGateway":
-            if (checkNumberHp === "62") return checkNumberHp + "@c.us";
-            return checkNumberHp.replace(checkNumberHp, "628") + "@c.us";
+            if (checkNumberHp === "62") return request + "@c.us";
+            return request.replace(checkNumberHp, "628") + "@c.us";
         default:
             return "";
     }
@@ -127,8 +127,8 @@ export const randomString = (length: number): string => {
     return result;
 };
 
-export const validateGenerateError = (message: string): never => {
-    throw new Error(message);
+export const validateGenerateError = (message: string, statusCode: number): never => {
+    throw { message, statusCode };
 };
 
 export const randomHash = (value: crypto.BinaryLike, encode: crypto.BinaryToTextEncoding): Promise<string> => {
