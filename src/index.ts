@@ -13,7 +13,6 @@ import { logger } from "./config/logger";
 
 // SERVICES
 import { authWA } from "./services/auth/authWA";
-import { validationService } from "./services/whatsapp/validationService";
 
 // LIBARY
 import { validateRequestParams, validateRequestHp, validateRequestBuffer, validateGenerateError } from "./lib/baseFunctions";
@@ -72,30 +71,6 @@ client.on("authenticated", () => {
 // WHATSAPP GET MESSAGE
 client.on("message", async (message) => {
     try {
-        // STORE REQUEST DATA
-        const dataMessage = validateRequestBuffer(message.body, "encode");
-        const dataSender = validateRequestParams(message.from, "num");
-        const dataMedia = validateRequestParams("300", "num");
-        const dataRcvdTime = validateRequestParams(new Date(), "rcvdTime");
-
-        // REQUEST DATA VALIDATION
-        const requestValidation = {
-            message: dataMessage,
-            sender: dataSender,
-            media: dataMedia,
-            rcvdTime: dataRcvdTime,
-            sessionId: dataMessage,
-
-            // API VALIDATION URL
-            url: API_VALIDATION,
-        };
-
-        const responseValidation: any = await validationService(requestValidation);
-
-        if (responseValidation.status === 200) {
-            const message = responseValidation.data?.message;
-            client.sendMessage(validateRequestHp(dataSender, "waGateway"), message);
-        }
     } catch (error: any) {
         validateGenerateError(error.message, error.status);
     }
