@@ -3,7 +3,7 @@ import crypto from "crypto";
 
 export const validateParams = (request: string, regExp: RegExp, changeValue?: string): string => {
     if (changeValue) return request.toString().replace(regExp, changeValue);
-    return request.toString().replace(regExp, "").toUpperCase().trim();
+    return request.toString().replace(regExp, "").trim();
 };
 
 export const validateRequestParams = (request: any, type: string): string => {
@@ -14,17 +14,6 @@ export const validateRequestParams = (request: any, type: string): string => {
             return validateParams(request, /[^a-z\d\s]+/gi);
         case "charSpace":
             return validateParams(request, /[^a-zA-Z]/g);
-        case "charConvert":
-            const checkRequestLength = request.match(/[_*]/g) ?? [];
-
-            if (checkRequestLength.length > 0) {
-                const message = checkRequestLength.map((v: string) => {
-                    if (v === "_") return request;
-                    return validateParams(request, /\*/g, "#");
-                });
-                return message[0];
-            }
-            return request;
         case "num":
             return validateParams(request, /[^0-9]+/g);
         case "numChar":
@@ -68,15 +57,6 @@ export const validateRequestHp = (request: any, type: string): string => {
     const checkNumberHp = request.substring(0, 2);
 
     switch (type) {
-        case "validation":
-        case "operator":
-            return request.replace(checkNumberHp, `628`);
-        case "topup":
-            return request.replace(checkNumberHp, `0`);
-        case "integration":
-        case "claimPrize":
-            if (checkNumberHp === "62") return request;
-            return request.replace(checkNumberHp, `628`);
         case "waGateway":
             if (checkNumberHp === "62") return request + "@c.us";
             return request.replace(checkNumberHp, "628") + "@c.us";
@@ -91,20 +71,10 @@ export const validateRequestMoment = (request: any, type: string): string => {
             return moment(request).format("YYYY-MM-DD");
         case "datetime":
             return moment(request).format("YYYY-MM-DD HH:mm:ss");
+        case "datetime2":
+            return moment(request).format("YYYYMMDDHHmmss");
         case "datetimeConvert":
             return moment().utc(request).format("YYYY-MM-DD HH:mm:ss");
-        case "datetopup":
-            return moment(request).format("YYYYMMDDHHmmss");
-        case "exp":
-            return moment(request).format("DD/MM/YYYY");
-        case "exptopup":
-            return moment(request?.split("/")[1]).format("YYYY-MM-DD") ?? moment(request).format("YYYY-MM-DD");
-        case "age":
-            const checkAgeValid = moment(request).isValid() ? request : "";
-            const calculateAge = checkAgeValid ? moment().diff(checkAgeValid, "years", false).toString() : "0";
-            const age = calculateAge.length > 2 ? "0" : calculateAge;
-
-            return age;
 
         default:
             return "";
@@ -112,7 +82,9 @@ export const validateRequestMoment = (request: any, type: string): string => {
 };
 
 export const validateRequestEmoji = (request: any): string => {
-    return request?.replace(/\p{Extended_Pictographic}/gu, (m: any, idx: any) => `[e-${m.codePointAt(0).toString(16)}]`) ?? "";
+    if (!request) return "";
+
+    return request.replace(/\p{Extended_Pictographic}/gu, (m: any, idx: any) => `[e-${m.codePointAt(0).toString(16)}]`);
 };
 
 export const randomString = (length: number): string => {
@@ -127,8 +99,8 @@ export const randomString = (length: number): string => {
     return result;
 };
 
-export const validateGenerateError = (message: string, statusCode: number): never => {
-    throw { message, statusCode };
+export const validateGenerateError = (message: any): never => {
+    throw message;
 };
 
 export const randomHash = (value: crypto.BinaryLike, encode: crypto.BinaryToTextEncoding): Promise<string> => {
