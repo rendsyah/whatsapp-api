@@ -9,6 +9,9 @@ import path from "path";
 
 dotenv.config();
 
+// AXIOS INTERCEPTORS
+import axios from "./config/axios";
+
 // LOGGER
 import { logger } from "./config/logger";
 
@@ -20,7 +23,7 @@ import { validateRequestParams, validateRequestHp, validateRequestBuffer, valida
 
 const app = express();
 
-// CONFIG ENVIRONMENT
+// CONFIG PROGRAM
 const PROGRAM_PORT = process.env.PROGRAM_PORT;
 const PROGRAM_NAME = process.env.PROGRAM_NAME;
 
@@ -31,6 +34,9 @@ const SESSION_FILE_PATH = process.env.SESSION_FILE_PATH ?? "";
 // CONFIG MEDIA
 const MEDIA_PATH = process.env.MEDIA_PATH ?? "";
 const MEDIA_LIMIT_MB = process.env.MEDIA_LIMIT_MB ?? 0;
+
+// CONFIG API
+const API_VALIDATION = process.env.API_VALIDATION ?? "";
 
 app.use(cors());
 app.use(express.json());
@@ -132,7 +138,7 @@ client.on("message", async (message) => {
 
                         if (mediaLimit) {
                             fs.rmSync(`${appRoot}${MEDIA_PATH}${mediaDirectory}/${media}`, { recursive: true });
-                            logger.info("Whatsapp media greater than limit(10mb)");
+                            logger.info("Whatsapp media size greater than limit(10mb)");
                             return;
                         }
 
@@ -147,21 +153,26 @@ client.on("message", async (message) => {
         // await client.sendMessage(`Hallo, ${waName}`)
 
         // SEND REQUEST WHATSAPP AND GET RESPONSE DATA
-        // const responseRequestWhatsapp = await sendRequestWhatsapp({ waMessage, waSender, waTimestamp });
+        const requestDataValidation = {
+            message: validateRequestBuffer(waMessage, "encode"),
+            sender: waSender,
+            media: "300",
+            rcvdTime: waTimestamp,
+            sessionId: validateRequestBuffer(waMessage, "encode"),
+        };
+
+        const responseValidation = await axios.post(API_VALIDATION, requestDataValidation);
 
         // SEND REQUEST WHATSAPP WITH MEDIA AND GET RESPONSE DATA
         // const responseRequestWhatsapp = await sendRequestWhatsapp({ waMessage, waSender, waMedia, waTimestamp });
 
-        // const { status, data } = responseRequestWhatsapp;
-        // const {sender, message, image} = data;
-
         // CHECK STATUS ERROR
-        // if (status >= 400) {
-        //     validateGenerateError(message, status)
-        // }
+        if (responseValidation.status >= 400) {
+            validateGenerateError(responseValidation.data.message);
+        }
 
         // SEND WITH MESSAGE
-        // await client.sendMessage(validateRequestHp(sender, "waGateway"), message);
+        await client.sendMessage(validateRequestHp(waSender, "waGateway"), responseValidation.data.message);
 
         // SEND WITH MESSAGE & MEDIA
         // await client.sendMessage(validateRequestHp(sender, "waGateway"), message, { media: MessageMedia.fromFilePath(`${appRoot}${MEDIA_PATH}${mediaDirectory}/${image}`) });
@@ -224,7 +235,7 @@ app.get("/whatsapp/blast", async (req: Request, res: Response, next: NextFunctio
 
         for (let i = 0; i < waContact.length; i++) {
             const phone = waContact[i].phone;
-            setTimeout(async () => await client.sendMessage(phone, waMessage), 40000, i);
+            setTimeout(async () => await client.sendMessage(phone, waMessage), 40000 * i);
         }
     } catch (error) {
         next(error);

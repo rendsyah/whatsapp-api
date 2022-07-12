@@ -4,7 +4,7 @@ const { createLogger, transports } = winston;
 const { combine, colorize, timestamp, printf } = winston.format;
 
 const loggerFormat = printf(({ level, message, timestamp }) => {
-    return `[${timestamp}] ${level}: ${message}`;
+    return `${timestamp} ${level}: ${message}`;
 });
 
 export const logger = createLogger({
