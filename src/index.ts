@@ -110,7 +110,7 @@ client.on("message", async (message) => {
             if (!fs.existsSync(`${appRoot}${MEDIA_PATH}${mediaDirectory}`)) {
                 fs.mkdir(`${appRoot}${MEDIA_PATH}${mediaDirectory}`, { recursive: true }, (error) => {
                     if (error) validateGenerateError(error);
-                    logger.info("Whatsapp directory media has been created!");
+                    logger.info("Whatsapp media directory has been created!");
                 });
             }
 
