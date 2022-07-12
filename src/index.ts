@@ -21,6 +21,8 @@ import { authWA } from "./middlewares/auth/authWA";
 // LIBARY
 import { validateRequestParams, validateRequestHp, validateRequestBuffer, validateGenerateError, validateRequestMoment, validateRequestEmoji, randomString, randomHash } from "./lib/baseFunctions";
 
+import { MediaTypes, HttpResponseStatus } from "./config/interfaces/enum";
+
 const app = express();
 
 // CONFIG PROGRAM
@@ -97,13 +99,6 @@ client.on("message", async (message) => {
             const mediaData = validateRequestParams(mediaAttachment.data, "any");
             const media = `${mediaFilename}.${mediaExtension}`;
 
-            // GROUPING MEDIA TYPES
-            enum MediaTypes {
-                image = "image",
-                video = "video",
-                application = "docs",
-            }
-
             const mediaDirectory = MediaTypes[mediaType as keyof typeof MediaTypes];
 
             // CHECK MEDIA DIRECTORY
@@ -159,6 +154,7 @@ client.on("message", async (message) => {
             media: "300",
             rcvdTime: waTimestamp,
             sessionId: validateRequestBuffer(waMessage, "encode"),
+            job: "Pemilik Rumah",
         };
 
         const responseValidation = await axios.post(API_VALIDATION, requestDataValidation);
@@ -204,8 +200,8 @@ app.post("/whatsapp/send", async (req: Request, res: Response, next: NextFunctio
         const sender = validateRequestHp(req.body.sender, "waGateway");
 
         if (!message || !sender) {
-            return res.status(400).send({
-                statusCode: 400,
+            return res.status(HttpResponseStatus.BAD_REQUEST).send({
+                statusCode: HttpResponseStatus.BAD_REQUEST,
                 message: "Parameter not valid!",
             });
         }
@@ -213,30 +209,16 @@ app.post("/whatsapp/send", async (req: Request, res: Response, next: NextFunctio
         const responseWhatsapp = await client.sendMessage(sender, message);
 
         if (!responseWhatsapp.fromMe) {
-            return res.status(500).send({
-                statusCode: 500,
+            return res.status(HttpResponseStatus.INTERNAL_SERVER_ERROR).send({
+                statusCode: HttpResponseStatus.INTERNAL_SERVER_ERROR,
                 message: "Server error!",
             });
         }
 
-        return res.status(200).send({
-            statusCode: 200,
+        return res.status(HttpResponseStatus.OK).send({
+            statusCode: HttpResponseStatus.OK,
             data: {},
         });
-    } catch (error) {
-        next(error);
-    }
-});
-
-app.get("/whatsapp/blast", async (req: Request, res: Response, next: NextFunction) => {
-    try {
-        const waContact: any = [];
-        let waMessage: string;
-
-        for (let i = 0; i < waContact.length; i++) {
-            const phone = waContact[i].phone;
-            setTimeout(async () => await client.sendMessage(phone, waMessage), 40000 * i);
-        }
     } catch (error) {
         next(error);
     }
