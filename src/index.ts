@@ -38,7 +38,7 @@ const MEDIA_PATH = process.env.MEDIA_PATH ?? "";
 const MEDIA_LIMIT_MB = process.env.MEDIA_LIMIT_MB ?? 0;
 
 // CONFIG API
-const API_VALIDATION = process.env.API_VALIDATION ?? "";
+const API_CONNECT = process.env.API_CONNECT ?? "";
 
 app.use(cors());
 app.use(express.json());
@@ -148,27 +148,30 @@ client.on("message", async (message) => {
         // await client.sendMessage(`Hallo, ${waName}`)
 
         // SEND REQUEST WHATSAPP AND GET RESPONSE DATA
-        const requestDataValidation = {
+        const requestData = {
             message: validateRequestBuffer(waMessage, "encode"),
             sender: waSender,
             media: "300",
             rcvdTime: waTimestamp,
             sessionId: validateRequestBuffer(waMessage, "encode"),
-            job: "Pemilik Rumah",
         };
 
-        const responseValidation = await axios.post(API_VALIDATION, requestDataValidation);
+        // SEND REQUEST WHATSAPP AND RESPONSE DATA
+        const responseData = await axios.post(API_CONNECT, requestData);
+
+        // GET REQUEST WHATSAPP AND RESPONSE DATA
+        // const responseData = await axios.get(`${API_CONNECT}?name=${waName}&sender=${waSender}&message=${waMessage}&timestamp=${waTimestamp}`);
 
         // SEND REQUEST WHATSAPP WITH MEDIA AND GET RESPONSE DATA
         // const responseRequestWhatsapp = await sendRequestWhatsapp({ waMessage, waSender, waMedia, waTimestamp });
 
         // CHECK STATUS ERROR
-        if (responseValidation.status >= 400) {
-            validateGenerateError(responseValidation.data.message);
+        if (responseData.status >= 400) {
+            validateGenerateError(responseData.data.message);
         }
 
         // SEND WITH MESSAGE
-        await client.sendMessage(validateRequestHp(waSender, "waGateway"), responseValidation.data.message);
+        await client.sendMessage(validateRequestHp(waSender, "waGateway"), responseData.data.message);
 
         // SEND WITH MESSAGE & MEDIA
         // await client.sendMessage(validateRequestHp(sender, "waGateway"), message, { media: MessageMedia.fromFilePath(`${appRoot}${MEDIA_PATH}${mediaDirectory}/${image}`) });
