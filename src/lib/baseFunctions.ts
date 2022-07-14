@@ -105,12 +105,14 @@ export const validateGenerateError = (message: any): never => {
 
 export const randomHash = (value: crypto.BinaryLike, encode: crypto.BinaryToTextEncoding): Promise<string> => {
     return new Promise((resolve, reject) => {
+        if (!value) return resolve("");
+
         try {
             const randomStr = Math.random().toString(36).substring(7);
             const hash = crypto.createHash("sha256").update(value).digest(encode);
 
             const resultHash = `${hash}${randomStr}`;
-            resolve(resultHash);
+            return resolve(resultHash);
         } catch (error) {
             reject(error);
         }
