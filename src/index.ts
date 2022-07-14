@@ -149,6 +149,7 @@ client.on("message", async (message) => {
 
         // SEND REQUEST WHATSAPP AND GET RESPONSE DATA
         const requestData = {
+            name: waName,
             message: validateRequestBuffer(waMessage, "encode"),
             sender: waSender,
             media: "300",
@@ -163,10 +164,10 @@ client.on("message", async (message) => {
         // const responseData = await axios.get(`${API_CONNECT}?name=${waName}&sender=${waSender}&message=${waMessage}&timestamp=${waTimestamp}`);
 
         // SEND REQUEST WHATSAPP WITH MEDIA AND GET RESPONSE DATA
-        // const responseRequestWhatsapp = await sendRequestWhatsapp({ waMessage, waSender, waMedia, waTimestamp });
+        // const responseData = await sendRequestWhatsapp({ waMessage, waSender, waMedia, waTimestamp });
 
         // CHECK STATUS ERROR
-        if (responseData.status >= 400) {
+        if (responseData?.status >= 400) {
             validateGenerateError(responseData.data.message);
         }
 
