@@ -95,7 +95,7 @@ client.on("message", async (message) => {
             const mediaAttachmentType = mediaAttachment.mimetype.split("/");
             const [mediaType, mediaExtension] = mediaAttachmentType;
 
-            const mediaFilename = randomHash(mediaAttachment.filename ?? "", "base64") || `${validateRequestMoment(new Date(), "datetime2")}_${randomString(5)}`;
+            const mediaFilename = `${validateRequestMoment(new Date(), "datetime2")}_${randomString(13)}`;
             const mediaData = validateRequestParams(mediaAttachment.data, "any");
             const media = `${mediaFilename}.${mediaExtension}`;
 
@@ -158,7 +158,7 @@ client.on("message", async (message) => {
         };
 
         // SEND REQUEST WHATSAPP AND RESPONSE DATA
-        const responseData = await axios.post(API_CONNECT, requestData);
+        // const responseData = await axios.post(API_CONNECT, requestData);
 
         // GET REQUEST WHATSAPP AND RESPONSE DATA
         // const responseData = await axios.get(`${API_CONNECT}?name=${waName}&sender=${waSender}&message=${waMessage}&timestamp=${waTimestamp}`);
@@ -167,12 +167,12 @@ client.on("message", async (message) => {
         // const responseData = await sendRequestWhatsapp({ waMessage, waSender, waMedia, waTimestamp });
 
         // CHECK STATUS ERROR
-        if (responseData?.status >= 400) {
-            validateGenerateError(responseData.data.message);
-        }
+        // if (responseData?.status >= 400) {
+        //     validateGenerateError(responseData.data.message);
+        // }
 
         // SEND WITH MESSAGE
-        await client.sendMessage(validateRequestHp(waSender, "waGateway"), responseData.data.message);
+        // await client.sendMessage(validateRequestHp(waSender, "waGateway"), responseData.data.message);
 
         // SEND WITH MESSAGE & MEDIA
         // await client.sendMessage(validateRequestHp(sender, "waGateway"), message, { media: MessageMedia.fromFilePath(`${appRoot}${MEDIA_PATH}${mediaDirectory}/${image}`) });
