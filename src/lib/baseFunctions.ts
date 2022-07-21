@@ -1,6 +1,8 @@
 import moment from "moment";
 import crypto from "crypto";
 
+import { logger } from "../config/logger";
+
 export const validateParams = (request: string, regExp: RegExp, changeValue?: string): string => {
     if (changeValue) return request.toString().replace(regExp, changeValue);
     return request.toString().replace(regExp, "").trim();
@@ -100,7 +102,7 @@ export const randomString = (length: number): string => {
 };
 
 export const validateGenerateError = (message: any): never => {
-    throw message;
+    throw logger.error(new Error(message));
 };
 
 export const randomHash = (value: crypto.BinaryLike, encode: crypto.BinaryToTextEncoding): Promise<string> => {

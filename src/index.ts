@@ -19,7 +19,7 @@ import { logger } from "./config/logger";
 import { authWA } from "./middlewares/auth/authWA";
 
 // LIBARY
-import { validateRequestParams, validateRequestHp, validateRequestBuffer, validateGenerateError, validateRequestMoment, validateRequestEmoji, randomString, randomHash } from "./lib/baseFunctions";
+import { validateRequestParams, validateRequestHp, validateRequestBuffer, validateGenerateError, validateRequestMoment, validateRequestEmoji, randomString } from "./lib/baseFunctions";
 
 import { MediaTypes, HttpResponseStatus } from "./config/interfaces/enum";
 
@@ -116,7 +116,7 @@ client.on("message", async (message) => {
 
                 // SEND MESSAGE IF EXTENSION NOT ALLOWED
                 if (!mediaCheck) {
-                    logger.info("media extension not allowed!");
+                    logger.warn("media extension not allowed!");
                     return;
                 }
 
@@ -133,7 +133,7 @@ client.on("message", async (message) => {
 
                         if (mediaLimit) {
                             fs.rmSync(`${appRoot}${MEDIA_PATH}${mediaDirectory}/${media}`, { recursive: true });
-                            logger.info("Whatsapp media size greater than limit(10mb)");
+                            logger.warn("Whatsapp media size greater than limit(10mb)");
                             return;
                         }
 
@@ -158,21 +158,22 @@ client.on("message", async (message) => {
         };
 
         // SEND REQUEST WHATSAPP AND RESPONSE DATA
-        // const responseData = await axios.post(API_CONNECT, requestData);
+        // const responseData = await axios
+        //     .post(API_CONNECT, requestData)
+        //     .then((v) => v)
+        //     .catch((err) => validateGenerateError(err));
 
         // GET REQUEST WHATSAPP AND RESPONSE DATA
-        // const responseData = await axios.get(`${API_CONNECT}?name=${waName}&sender=${waSender}&message=${waMessage}&timestamp=${waTimestamp}`);
+        const responseData = await axios
+            .get(`${API_CONNECT}?name=${waName}&sender=${waSender}&message=${waMessage}&timestamp=${waTimestamp}`)
+            .then((v) => v)
+            .catch((err) => validateGenerateError(err));
 
         // SEND REQUEST WHATSAPP WITH MEDIA AND GET RESPONSE DATA
         // const responseData = await sendRequestWhatsapp({ waMessage, waSender, waMedia, waTimestamp });
 
-        // CHECK STATUS ERROR
-        // if (responseData?.status >= 400) {
-        //     validateGenerateError(responseData.data.message);
-        // }
-
         // SEND WITH MESSAGE
-        // await client.sendMessage(validateRequestHp(waSender, "waGateway"), responseData.data.message);
+        await client.sendMessage(validateRequestHp(waSender, "waGateway"), responseData.data?.message);
 
         // SEND WITH MESSAGE & MEDIA
         // await client.sendMessage(validateRequestHp(sender, "waGateway"), message, { media: MessageMedia.fromFilePath(`${appRoot}${MEDIA_PATH}${mediaDirectory}/${image}`) });
@@ -183,7 +184,7 @@ client.on("message", async (message) => {
 
 // WHATSAPP CONNECTION
 client.on("change_state", (state) => {
-    logger.info("Whatsapp connection", state);
+    logger.info("Whatsapp connection restarting...", state);
 });
 
 // WHATSAPP DISCONNECT
@@ -232,4 +233,4 @@ app.post("/whatsapp/send", async (req: Request, res: Response, next: NextFunctio
 app.use((err: any, req: Request, res: Response, next: NextFunction) => res.status(500).send({ message: "internal server error!" }));
 
 // LISTENING API
-app.listen(PROGRAM_PORT, () => logger.info(`${PROGRAM_NAME} is connected!`));
+app.listen(PROGRAM_PORT, () => logger.info(`${PROGRAM_NAME} running on port ${PROGRAM_PORT}`));
