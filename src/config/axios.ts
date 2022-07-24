@@ -3,9 +3,7 @@ import axios from "axios";
 // LOGGER
 import { logger } from "./logger";
 
-const axiosInstance = axios.create({
-    timeout: 10000,
-});
+const axiosInstance = axios.create({});
 
 axiosInstance.interceptors.request.use(
     (request) => {

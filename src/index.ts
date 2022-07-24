@@ -19,9 +19,21 @@ import { logger } from "./config/logger";
 import { authWA } from "./middlewares/auth/authWA";
 
 // LIBARY
-import { validateRequestParams, validateRequestHp, validateRequestBuffer, validateGenerateError, validateRequestMoment, validateRequestEmoji, randomString } from "./lib/baseFunctions";
+import {
+    validateRequestParams,
+    validateRequestHp,
+    validateRequestBuffer,
+    validateGenerateError,
+    validateRequestMoment,
+    validateRequestEmoji,
+    randomString,
+    responseApiSuccess,
+    responseApiError,
+} from "./lib/baseFunctions";
 
 import { MediaTypes, HttpResponseStatus } from "./config/interfaces/enum";
+
+const { Ok, Created, BadRequest, Unauthorized, Forbidden, NotFound, InternalServerError, BadGateway } = HttpResponseStatus;
 
 const app = express();
 
@@ -43,10 +55,13 @@ const API_CONNECT = process.env.API_CONNECT ?? "";
 app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+app.use("/media", express.static(`${appRoot}${MEDIA_PATH}image`));
+app.use("/media", express.static(`${appRoot}${MEDIA_PATH}video`));
 
 // WHATSAPP CLIENT
 const client = new Client({
     puppeteer: {
+        args: ["--no-sandbox", "--disable-setuid-sandbox"],
         headless: true,
     },
     takeoverTimeoutMs: 10000,
@@ -158,22 +173,19 @@ client.on("message", async (message) => {
         };
 
         // SEND REQUEST WHATSAPP AND RESPONSE DATA
-        // const responseData = await axios
-        //     .post(API_CONNECT, requestData)
-        //     .then((v) => v)
-        //     .catch((err) => validateGenerateError(err));
+        const responseData = await axios
+            .post(API_CONNECT, requestData)
+            .then((v) => v)
+            .catch((err) => err);
 
         // GET REQUEST WHATSAPP AND RESPONSE DATA
-        const responseData = await axios
-            .get(`${API_CONNECT}?name=${waName}&sender=${waSender}&message=${waMessage}&timestamp=${waTimestamp}`)
-            .then((v) => v)
-            .catch((err) => validateGenerateError(err));
-
-        // SEND REQUEST WHATSAPP WITH MEDIA AND GET RESPONSE DATA
-        // const responseData = await sendRequestWhatsapp({ waMessage, waSender, waMedia, waTimestamp });
+        // const responseData = await axios
+        //     .get(`${API_CONNECT}?name=${waName}&sender=${waSender}&message=${waMessage}&timestamp=${waTimestamp}`)
+        //     .then((v) => v)
+        //     .catch((err) => err);
 
         // SEND WITH MESSAGE
-        await client.sendMessage(validateRequestHp(waSender, "waGateway"), responseData.data?.message);
+        await client.sendMessage(validateRequestHp(waSender, "waGateway"), responseData.data?.message).catch((err) => err);
 
         // SEND WITH MESSAGE & MEDIA
         // await client.sendMessage(validateRequestHp(sender, "waGateway"), message, { media: MessageMedia.fromFilePath(`${appRoot}${MEDIA_PATH}${mediaDirectory}/${image}`) });
@@ -191,8 +203,8 @@ client.on("change_state", (state) => {
 client.on("disconnected", async (reason) => {
     logger.info("Whatsapp is disconnected!", reason);
 
-    // IF CLIENT DISCONNECT REMOVE SESSION
-    fs.rmSync(SESSION_FILE_PATH, { recursive: true, force: true });
+    // IF CLIENT DISCONNECT & REMOVE SESSION
+    fs.rmSync(`${SESSION_FILE_PATH}/session-${SESSION_CLIENT}`, { recursive: true, force: true });
     await client.destroy();
 });
 
@@ -205,25 +217,15 @@ app.post("/whatsapp/send", async (req: Request, res: Response, next: NextFunctio
         const sender = validateRequestHp(req.body.sender, "waGateway");
 
         if (!message || !sender) {
-            return res.status(HttpResponseStatus.BAD_REQUEST).send({
-                statusCode: HttpResponseStatus.BAD_REQUEST,
-                message: "Parameter not valid!",
-            });
+            return res.status(BadRequest).send(responseApiError(BadRequest, "parameter not valid!", [message, sender], "sender cannot be empty"));
         }
 
-        const responseWhatsapp = await client.sendMessage(sender, message);
+        const responseData = await client
+            .sendMessage(sender, message)
+            .then((v) => v)
+            .catch((err) => err);
 
-        if (!responseWhatsapp.fromMe) {
-            return res.status(HttpResponseStatus.INTERNAL_SERVER_ERROR).send({
-                statusCode: HttpResponseStatus.INTERNAL_SERVER_ERROR,
-                message: "Server error!",
-            });
-        }
-
-        return res.status(HttpResponseStatus.OK).send({
-            statusCode: HttpResponseStatus.OK,
-            data: {},
-        });
+        return res.status(Ok).send(responseApiSuccess(Ok, "success", responseData.id));
     } catch (error) {
         next(error);
     }

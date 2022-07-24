@@ -121,10 +121,33 @@ export const randomHash = (value: crypto.BinaryLike, encode: crypto.BinaryToText
     });
 };
 
-export const randomVoucher = (voucher: number[]): number => {
-    return Math.floor(Math.random() * voucher.length + 1);
+export const randomInt = (...value: number[]): number => {
+    return Math.floor(Math.random() * value.length + 1);
 };
 
 export const randomLuck = (value: number): number => {
     return Math.floor(Math.random() * value);
+};
+
+export const responseApiError = (status: number, message: string, params: string[] = [], detail: string): any => {
+    return {
+        apiVersion: "1.0",
+        error: {
+            code: status,
+            message: message,
+            errors: [{ params: params }],
+            detail: detail,
+        },
+    };
+};
+
+export const responseApiSuccess = (status: number, message: string, data: any = {}): any => {
+    return {
+        apiVersion: "1.0",
+        data: {
+            code: status,
+            message: message,
+            data: data,
+        },
+    };
 };
