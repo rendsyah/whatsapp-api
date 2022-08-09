@@ -1,32 +1,37 @@
 {
-  "name": "whatsapp-api",
-  "version": "1.0.0",
-  "description": "Whatsapp API",
-  "main": "index.js",
-  "scripts": {
-    "dev": "nodemon src/index.ts"
-  },
-  "author": "Rendy Ferdiansyah",
-  "license": "ISC",
-  "dependencies": {
-    "app-root-path": "^3.0.0",
-    "axios": "^0.27.2",
-    "cors": "^2.8.5",
-    "dotenv": "^16.0.1",
-    "express": "^4.18.1",
-    "moment": "^2.29.3",
-    "mysql2": "^2.3.3",
-    "qrcode-terminal": "^0.12.0",
-    "whatsapp-web.js": "^1.16.7",
-    "winston": "^3.8.1"
-  },
-  "devDependencies": {
-    "@types/app-root-path": "^1.2.4",
-    "@types/cors": "^2.8.12",
-    "@types/express": "^4.17.13",
-    "@types/node": "^17.0.42",
-    "@types/qrcode-terminal": "^0.12.0",
-    "ts-node": "^10.8.1",
-    "typescript": "^4.7.3"
-  }
+    "name": "whatsapp-api",
+    "version": "1.0.0",
+    "description": "Whatsapp API",
+    "main": "index.js",
+    "scripts": {
+        "build": "rimraf ./dist && tsc",
+        "dev": "cross-env NODE_ENV=development nodemon src/index.ts",
+        "prod": "node ./dist/index.js"
+    },
+    "author": "Rendy Ferdiansyah",
+    "license": "ISC",
+    "dependencies": {
+        "app-root-path": "^3.0.0",
+        "axios": "^0.27.2",
+        "cors": "^2.8.5",
+        "cross-env": "^7.0.3",
+        "dotenv": "^16.0.1",
+        "express": "^4.18.1",
+        "express-winston": "^4.2.0",
+        "moment": "^2.29.3",
+        "mysql2": "^2.3.3",
+        "qrcode-terminal": "^0.12.0",
+        "whatsapp-web.js": "^1.16.7",
+        "winston": "^3.8.1",
+        "winston-daily-rotate-file": "^4.7.1"
+    },
+    "devDependencies": {
+        "@types/app-root-path": "^1.2.4",
+        "@types/cors": "^2.8.12",
+        "@types/express": "^4.17.13",
+        "@types/node": "^17.0.42",
+        "@types/qrcode-terminal": "^0.12.0",
+        "ts-node": "^10.8.1",
+        "typescript": "^4.7.3"
+    }
 }

@@ -3,6 +3,7 @@ import { Client, MessageMedia } from "whatsapp-web.js";
 import dotenv from "dotenv";
 import cors from "cors";
 import qrcode from "qrcode-terminal";
+import * as expressWinston from "express-winston";
 import fs from "fs";
 import appRoot from "app-root-path";
 import path from "path";
@@ -10,10 +11,10 @@ import path from "path";
 dotenv.config();
 
 // AXIOS INTERCEPTORS
-import axios from "./config/axios";
+import axios from "./config/interceptors/axios";
 
 // LOGGER
-import { logger } from "./config/logger";
+import { loggerDev, loggerProd } from "./config/logs/logger";
 
 // MIDDLEWARE
 import { authWA } from "./middlewares/auth/authWA";
@@ -29,6 +30,7 @@ import {
     randomString,
     responseApiSuccess,
     responseApiError,
+    sendRequestMessage,
 } from "./lib/baseFunctions";
 
 import { MediaTypes, HttpResponseStatus } from "./config/interfaces/enum";
@@ -47,7 +49,6 @@ const SESSION_FILE_PATH = process.env.SESSION_FILE_PATH ?? "";
 
 // CONFIG MEDIA
 const MEDIA_PATH = process.env.MEDIA_PATH ?? "";
-const MEDIA_LIMIT_MB = process.env.MEDIA_LIMIT_MB ?? 0;
 
 // CONFIG API
 const API_CONNECT = process.env.API_CONNECT ?? "";
@@ -56,6 +57,7 @@ app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use("/media", express.static(`${appRoot}${MEDIA_PATH}image`));
+app.use("/media", express.static(`${appRoot}${MEDIA_PATH}docs`));
 app.use("/media", express.static(`${appRoot}${MEDIA_PATH}video`));
 
 // WHATSAPP CLIENT
@@ -71,25 +73,33 @@ const client = new Client({
 
 // WHATSAPP RESTORING AUTH SESSION
 if (fs.existsSync(SESSION_FILE_PATH)) {
-    logger.info("Whatsapp restoring session...");
+    loggerDev.info("Whatsapp restoring session...");
 }
 
 // WHATSAPP GENERATE QR CODE
 client.on("qr", (qr) => {
-    logger.info("Whatsapp QR Code received");
+    loggerDev.info("Whatsapp QR Code received");
     qrcode.generate(qr, { small: true });
 });
 
 // WHATSAPP CONNECT
 client.on("ready", async () => {
     const whatsappVersion = await client.getWWebVersion();
-    logger.info("Whatsapp is connected!");
-    logger.info(`Whatsapp version ${whatsappVersion}`);
+
+    if (!fs.existsSync(`${appRoot}${MEDIA_PATH}`)) {
+        fs.mkdir(`${appRoot}${MEDIA_PATH}`, { recursive: true }, (error) => {
+            if (error) validateGenerateError(error);
+            if (!error) loggerDev.info("Whatsapp public directory has been created!");
+        });
+    }
+
+    loggerDev.info("Whatsapp is connected!");
+    loggerDev.info(`Whatsapp version ${whatsappVersion}`);
 });
 
 // WHATSAPP AUTH SESSION
 client.on("authenticated", () => {
-    logger.info("Whatsapp authentication success!");
+    loggerDev.info("Whatsapp authentication success!");
 });
 
 // WHATSAPP GET MESSAGE
@@ -110,7 +120,7 @@ client.on("message", async (message) => {
             const mediaAttachmentType = mediaAttachment.mimetype.split("/");
             const [mediaType, mediaExtension] = mediaAttachmentType;
 
-            const mediaFilename = `${validateRequestMoment(new Date(), "datetime2")}_${randomString(13)}`;
+            const mediaFilename = `${validateRequestMoment(new Date(), "datetime2")}_${randomString(9)}`;
             const mediaData = validateRequestParams(mediaAttachment.data, "any");
             const media = `${mediaFilename}.${mediaExtension}`;
 
@@ -120,7 +130,7 @@ client.on("message", async (message) => {
             if (!fs.existsSync(`${appRoot}${MEDIA_PATH}${mediaDirectory}`)) {
                 fs.mkdir(`${appRoot}${MEDIA_PATH}${mediaDirectory}`, { recursive: true }, (error) => {
                     if (error) validateGenerateError(error);
-                    logger.info("Whatsapp media directory has been created!");
+                    if (!error) loggerDev.info("Whatsapp media directory has been created!");
                 });
             }
 
@@ -131,30 +141,16 @@ client.on("message", async (message) => {
 
                 // SEND MESSAGE IF EXTENSION NOT ALLOWED
                 if (!mediaCheck) {
-                    logger.warn("media extension not allowed!");
-                    return;
+                    return sendRequestMessage(client, waSender, "media extension not allowed! e.g.(PNG, JPEG, JPG, WEBP, MP4, PDF)");
                 }
 
                 // STORE MEDIA TO DIRECTORY
                 fs.writeFile(`${appRoot}${MEDIA_PATH}${mediaDirectory}/${media}`, mediaData, "base64", (error) => {
                     if (error) validateGenerateError(error);
-
-                    // CHECK MEDIA SIZE
-                    fs.stat(`${appRoot}${MEDIA_PATH}${mediaDirectory}/${media}`, (error, stats) => {
-                        if (error) validateGenerateError(error);
-
-                        const mediaSize = stats.size;
-                        const mediaLimit = mediaSize > +MEDIA_LIMIT_MB;
-
-                        if (mediaLimit) {
-                            fs.rmSync(`${appRoot}${MEDIA_PATH}${mediaDirectory}/${media}`, { recursive: true });
-                            logger.warn("Whatsapp media size greater than limit(10mb)");
-                            return;
-                        }
-
-                        logger.info("Whatsapp media has been downloaded!");
+                    if (!error) {
                         waMedia = media;
-                    });
+                        loggerDev.info("Whatsapp media has been downloaded!");
+                    }
                 });
             }
         }
@@ -173,19 +169,19 @@ client.on("message", async (message) => {
         };
 
         // SEND REQUEST WHATSAPP AND RESPONSE DATA
-        const responseData = await axios
-            .post(API_CONNECT, requestData)
-            .then((v) => v)
-            .catch((err) => err);
+        // const responseData = await axios
+        //     .post(API_CONNECT, requestData)
+        //     .then((v) => v)
+        //     .catch((error) => error);
 
         // GET REQUEST WHATSAPP AND RESPONSE DATA
-        // const responseData = await axios
-        //     .get(`${API_CONNECT}?name=${waName}&sender=${waSender}&message=${waMessage}&timestamp=${waTimestamp}`)
-        //     .then((v) => v)
-        //     .catch((err) => err);
+        const responseData = await axios
+            .get(`${API_CONNECT}?name=${waName}&sender=${waSender}&message=${waMessage}&timestamp=${waTimestamp}`)
+            .then((v) => v)
+            .catch((error) => error);
 
         // SEND WITH MESSAGE
-        await client.sendMessage(validateRequestHp(waSender, "waGateway"), responseData.data?.message).catch((err) => err);
+        await sendRequestMessage(client, waSender, responseData.data?.message);
 
         // SEND WITH MESSAGE & MEDIA
         // await client.sendMessage(validateRequestHp(sender, "waGateway"), message, { media: MessageMedia.fromFilePath(`${appRoot}${MEDIA_PATH}${mediaDirectory}/${image}`) });
@@ -196,12 +192,12 @@ client.on("message", async (message) => {
 
 // WHATSAPP CONNECTION
 client.on("change_state", (state) => {
-    logger.info("Whatsapp connection restarting...", state);
+    loggerDev.info("Whatsapp connection restarting...", state);
 });
 
 // WHATSAPP DISCONNECT
 client.on("disconnected", async (reason) => {
-    logger.info("Whatsapp is disconnected!", reason);
+    loggerDev.info("Whatsapp is disconnected!", reason);
 
     // IF CLIENT DISCONNECT & REMOVE SESSION
     fs.rmSync(`${SESSION_FILE_PATH}/session-${SESSION_CLIENT}`, { recursive: true, force: true });
@@ -211,19 +207,20 @@ client.on("disconnected", async (reason) => {
 // WHATSAPP INITALIZE
 client.initialize();
 
+// LOGGER INFO PRODUCTION
+app.use(expressWinston.logger(loggerProd));
+
+// API
 app.post("/whatsapp/send", async (req: Request, res: Response, next: NextFunction) => {
     try {
         const message = validateRequestParams(req.body.message, "any");
-        const sender = validateRequestHp(req.body.sender, "waGateway");
+        const sender = validateRequestParams(req.body.sender, "num");
 
         if (!message || !sender) {
-            return res.status(BadRequest).send(responseApiError(BadRequest, "parameter not valid!", [message, sender], "sender cannot be empty"));
+            return res.status(BadRequest).send(responseApiError(BadRequest, "parameter not valid!", [message, sender], "message or sender cannot be empty"));
         }
 
-        const responseData = await client
-            .sendMessage(sender, message)
-            .then((v) => v)
-            .catch((err) => err);
+        const responseData = await sendRequestMessage(client, sender, message);
 
         return res.status(Ok).send(responseApiSuccess(Ok, "success", responseData.id));
     } catch (error) {
@@ -231,8 +228,11 @@ app.post("/whatsapp/send", async (req: Request, res: Response, next: NextFunctio
     }
 });
 
+// LOGGER ERROR PRODUCTION
+app.use(expressWinston.errorLogger(loggerProd));
+
 // MIDDLEWARE RESPONSE ERROR
-app.use((err: any, req: Request, res: Response, next: NextFunction) => res.status(500).send({ message: "internal server error!" }));
+app.use((err: any, req: Request, res: Response, next: NextFunction) => res.status(InternalServerError).send(responseApiError(InternalServerError, "internal server error!", [], "")));
 
 // LISTENING API
-app.listen(PROGRAM_PORT, () => logger.info(`${PROGRAM_NAME} running on port ${PROGRAM_PORT}`));
+app.listen(PROGRAM_PORT, () => loggerDev.info(`${PROGRAM_NAME} running on port ${PROGRAM_PORT}`));

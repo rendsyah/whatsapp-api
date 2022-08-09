@@ -1,8 +1,8 @@
 # Path download media
-public
+public/
 
 # Session
-session
+session/
 
 # Json
 package-lock.json

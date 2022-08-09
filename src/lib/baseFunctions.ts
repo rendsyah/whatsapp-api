@@ -1,7 +1,7 @@
 import moment from "moment";
 import crypto from "crypto";
 
-import { logger } from "../config/logger";
+import logger from "../config/logs";
 
 export const validateParams = (request: string, regExp: RegExp, changeValue?: string): string => {
     if (changeValue) return request.toString().replace(regExp, changeValue);
@@ -101,8 +101,14 @@ export const randomString = (length: number): string => {
     return result;
 };
 
-export const validateGenerateError = (message: any): never => {
-    throw logger.error(new Error(message));
+export const validateGenerateError = (error: any): Promise<unknown> => {
+    return new Promise(() => {
+        try {
+            if (error) throw new Error(error);
+        } catch (error) {
+            logger.error(error);
+        }
+    });
 };
 
 export const randomHash = (value: crypto.BinaryLike, encode: crypto.BinaryToTextEncoding): Promise<string> => {
@@ -127,6 +133,17 @@ export const randomInt = (...value: number[]): number => {
 
 export const randomLuck = (value: number): number => {
     return Math.floor(Math.random() * value);
+};
+
+export const sendRequestMessage = async (client: any, sender: string, message: string, media?: any) => {
+    try {
+        if (media) {
+            return await client.sendMessage(validateRequestHp(sender, "waGateway"), message, media);
+        }
+        return await client.sendMessage(validateRequestHp(sender, "waGateway"), message);
+    } catch (error) {
+        await validateGenerateError(error);
+    }
 };
 
 export const responseApiError = (status: number, message: string, params: string[] = [], detail: string): any => {

@@ -1,9 +1,11 @@
 import axios from "axios";
 
 // LOGGER
-import { logger } from "./logger";
+import logger from "../logs";
 
-const axiosInstance = axios.create({});
+const axiosInstance = axios.create({
+    timeout: 30000,
+});
 
 axiosInstance.interceptors.request.use(
     (request) => {
@@ -11,18 +13,18 @@ axiosInstance.interceptors.request.use(
         return request;
     },
     (error) => {
-        logger.error(`SEND REQUEST ERROR, ${error.message}`);
+        logger.error(`SEND REQUEST ERROR, error: ${error.message}`);
         return Promise.reject(error);
     },
 );
 
 axiosInstance.interceptors.response.use(
     (response) => {
-        logger.info(`RECEIVED RESPONSE, status: ${response.status}, data: ${JSON.stringify(response.data)}, headers: ${JSON.stringify(response.headers)}`);
+        logger.info(`RECEIVED RESPONSE, data: ${JSON.stringify(response.data)}, headers: ${JSON.stringify(response.headers)}`);
         return response;
     },
     (error) => {
-        logger.error(`RECEIVED RESPONSE ERROR, ${error.message}`);
+        logger.error(`RECEIVED RESPONSE ERROR, error: ${error.message}`);
         return Promise.reject(error);
     },
 );
