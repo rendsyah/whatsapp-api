@@ -99,7 +99,7 @@ client.on("ready", async () => {
             fs.mkdir(path, { recursive: true }, async (error) => {
                 if (error) await validateGenerateError(error);
                 if (!error) {
-                    loggerDev.info(`Whatsapp ${i === 0 ? "public" : "upload"} directory has been created!`);
+                    loggerDev.info(`Whatsapp ${i === 0 ? "media" : "upload"} directory has been created!`);
                 }
             });
         });
@@ -127,29 +127,29 @@ client.on("message", async (message) => {
 
         // Received & Save Media
         if (message.hasMedia) {
-            const mediaAttachment = await message.downloadMedia();
-            const mediaAttachmentType = mediaAttachment.mimetype.split("/");
-            const mediaType = mediaAttachmentType[0];
-            const mediaExtension = mediaAttachment.filename?.split(".")[1] ?? mediaAttachmentType[1];
+            const mediaFile = await message.downloadMedia();
+            const mediaFileMimeType = mediaFile.mimetype.split("/");
+            const mediaFileType = mediaFileMimeType[0];
+            const mediaFileExtension = mediaFile.filename?.split(".")[1] ?? mediaFileMimeType[1];
 
             const mediaFilename = `${validateRequestMoment(new Date(), "datetime2")}_${randomString(5)}`;
-            const mediaData = validateRequestParams(mediaAttachment.data, "any");
-            const media = `${mediaFilename}.${mediaExtension}`;
+            const mediaFileData = validateRequestParams(mediaFile.data, "any");
+            const media = `${mediaFilename}.${mediaFileExtension}`;
 
-            const mediaDirectory = MediaTypes[mediaType as keyof typeof MediaTypes];
+            const mediaDirectory = MediaTypes[mediaFileType as keyof typeof MediaTypes];
 
             // Check Media Directory
             if (!fs.existsSync(`${appRoot}/..${MEDIA_PATH}${mediaDirectory}`)) {
                 fs.mkdir(`${appRoot}/..${MEDIA_PATH}${mediaDirectory}`, { recursive: true }, (error) => {
                     if (error) validateGenerateError(error);
                     if (!error) {
-                        loggerDev.info("Whatsapp media directory has been created!");
+                        loggerDev.info(`Whatsapp ${mediaDirectory} directory has been created!`);
                     }
                 });
             }
 
             // Check Received Extension Media (IMAGE, VIDEO, DOCS)
-            if (mediaType in MediaTypes) {
+            if (mediaFileType in MediaTypes) {
                 const mediaAllowed: RegExp = /png|jpe?g|webp|mp4|pdf|xlsx|csv/i;
                 const mediaCheck = mediaAllowed.test(path.extname(media));
 
@@ -159,7 +159,7 @@ client.on("message", async (message) => {
                 }
 
                 // Store Media To Directory
-                fs.writeFile(`${appRoot}/..${MEDIA_PATH}${mediaDirectory}${media}`, mediaData, "base64", async (error) => {
+                fs.writeFile(`${appRoot}/..${MEDIA_PATH}${mediaDirectory}${media}`, mediaFileData, "base64", async (error) => {
                     if (error) await validateGenerateError(error);
                     if (!error) {
                         waMedia = media;

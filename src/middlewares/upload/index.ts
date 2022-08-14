@@ -21,7 +21,7 @@ export const upload = (media: string) => {
         },
     });
 
-    const fileFilter = (req: Request, file: Express.Multer.File, cb: FileFilterCallback) => {
+    const fileFilter = (req: Request, file: Express.Multer.File, cb: FileFilterCallback): void => {
         if (file.fieldname === media) {
             if (file && !file.originalname.match(/\.(jpe?g|png|xlsx|csv)$/i)) {
                 return cb(new Error("media not allowed!"));
