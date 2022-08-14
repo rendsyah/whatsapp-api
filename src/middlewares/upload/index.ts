@@ -8,6 +8,7 @@ import { validateRequestMoment, randomString, responseApiError } from "../../con
 const { Ok, Created, BadRequest, Unauthorized, Forbidden, NotFound, InternalServerError, BadGateway } = HttpResponseStatus;
 
 const UPLOAD_PATH = process.env.UPLOAD_PATH;
+const SIZE_FILE_MB = process.env.SIZE_FILE_MB ?? 0;
 
 export const upload = (media: string) => {
     const storage = diskStorage({
@@ -22,15 +23,14 @@ export const upload = (media: string) => {
 
     const fileFilter = (req: Request, file: Express.Multer.File, cb: FileFilterCallback) => {
         if (file.fieldname === media) {
-            if (file && !file.originalname.match(/\.(jpe?g|png)$/i)) {
+            if (file && !file.originalname.match(/\.(jpe?g|png|xlsx|csv)$/i)) {
                 return cb(new Error("media not allowed!"));
             }
         }
         cb(null, true);
     };
 
-    const sizeInMB = 10;
-    const maxSize = sizeInMB * 1000 * 1000;
+    const maxSize = +SIZE_FILE_MB * 1000 * 1000;
 
     const uploadMedia = multer({
         storage,

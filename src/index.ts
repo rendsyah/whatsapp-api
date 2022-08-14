@@ -129,7 +129,8 @@ client.on("message", async (message) => {
         if (message.hasMedia) {
             const mediaAttachment = await message.downloadMedia();
             const mediaAttachmentType = mediaAttachment.mimetype.split("/");
-            const [mediaType, mediaExtension] = mediaAttachmentType;
+            const mediaType = mediaAttachmentType[0];
+            const mediaExtension = mediaAttachment.filename?.split(".")[1] ?? mediaAttachmentType[1];
 
             const mediaFilename = `${validateRequestMoment(new Date(), "datetime2")}_${randomString(5)}`;
             const mediaData = validateRequestParams(mediaAttachment.data, "any");
@@ -149,7 +150,7 @@ client.on("message", async (message) => {
 
             // Check Received Extension Media (IMAGE, VIDEO, DOCS)
             if (mediaType in MediaTypes) {
-                const mediaAllowed: RegExp = /png|jpe?g|webp|mp4|pdf/i;
+                const mediaAllowed: RegExp = /png|jpe?g|webp|mp4|pdf|xlsx|csv/i;
                 const mediaCheck = mediaAllowed.test(path.extname(media));
 
                 // Send Message If Extension Not Allowed
@@ -227,6 +228,9 @@ app.post("/whatsapp/callback", validation(callbackSchema), async (req: Request, 
 
 app.post("/whatsapp/broadcast", upload("file"), async (req: Request, res: Response, next: NextFunction) => {
     try {
+        const filename = req.file?.filename;
+        const readFile = fs.createReadStream(`${appRoot}/..${UPLOAD_PATH}${filename}`);
+
         return res.status(200).send({ message: "success" });
     } catch (error) {
         next(error);
