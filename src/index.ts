@@ -3,23 +3,28 @@ import { Client, MessageMedia } from "whatsapp-web.js";
 import dotenv from "dotenv";
 import cors from "cors";
 import qrcode from "qrcode-terminal";
-import * as expressWinston from "express-winston";
 import fs from "fs";
 import appRoot from "app-root-path";
 import path from "path";
+import * as expressWinston from "express-winston";
 
 dotenv.config();
 
-// AXIOS INTERCEPTORS
+// Axios Interceptors
 import axios from "./config/interceptors/axios";
 
-// LOGGER
-import { loggerDev, loggerProd } from "./config/logs/logger";
+// Logger
+import { loggerDev, loggerInfo, loggerError } from "./config/logs/logger";
 
-// MIDDLEWARE
-import { authWA } from "./middlewares/auth/authWA";
+// Middlewares
+import { authWA } from "./middlewares/auth";
+import { upload } from "./middlewares/upload";
+import { validation } from "./middlewares/validation";
 
-// LIBARY
+// Validation Schema
+import { callbackSchema } from "./schema/validation.pipe";
+
+// Base Functions Libary
 import {
     validateRequestParams,
     validateRequestHp,
@@ -28,39 +33,41 @@ import {
     validateRequestMoment,
     validateRequestEmoji,
     randomString,
+    sendRequestMessage,
     responseApiSuccess,
     responseApiError,
-    sendRequestMessage,
-} from "./lib/baseFunctions";
+} from "./config/lib/baseFunctions";
 
-import { MediaTypes, HttpResponseStatus } from "./config/interfaces/enum";
+import { MediaTypes } from "./config/interfaces/whatsapp.dto";
+import { HttpResponseStatus } from "./config/interfaces/responseStatus.dto";
 
 const { Ok, Created, BadRequest, Unauthorized, Forbidden, NotFound, InternalServerError, BadGateway } = HttpResponseStatus;
 
 const app = express();
 
-// CONFIG PROGRAM
+// Config Program
 const PROGRAM_PORT = process.env.PROGRAM_PORT;
 const PROGRAM_NAME = process.env.PROGRAM_NAME;
 
-// CONFIG SESSION
+// Config Session
 const SESSION_CLIENT = process.env.SESSION_CLIENT ?? "";
 const SESSION_FILE_PATH = process.env.SESSION_FILE_PATH ?? "";
 
-// CONFIG MEDIA
+// Config Media
 const MEDIA_PATH = process.env.MEDIA_PATH ?? "";
+const UPLOAD_PATH = process.env.UPLOAD_PATH ?? "";
 
-// CONFIG API
+// Config API
 const API_CONNECT = process.env.API_CONNECT ?? "";
 
 app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-app.use("/media", express.static(`${appRoot}${MEDIA_PATH}image`));
-app.use("/media", express.static(`${appRoot}${MEDIA_PATH}docs`));
-app.use("/media", express.static(`${appRoot}${MEDIA_PATH}video`));
+app.use("/image", express.static(`${appRoot}/..${MEDIA_PATH}image`));
+app.use("/docs", express.static(`${appRoot}/..${MEDIA_PATH}docs`));
+app.use("/video", express.static(`${appRoot}/..${MEDIA_PATH}video`));
 
-// WHATSAPP CLIENT
+// Whatsapp Client
 const client = new Client({
     puppeteer: {
         args: ["--no-sandbox", "--disable-setuid-sandbox"],
@@ -71,25 +78,30 @@ const client = new Client({
     authStrategy: authWA(SESSION_CLIENT, SESSION_FILE_PATH),
 });
 
-// WHATSAPP RESTORING AUTH SESSION
+// Whatsapp Restore Auth Session
 if (fs.existsSync(SESSION_FILE_PATH)) {
     loggerDev.info("Whatsapp restoring session...");
 }
 
-// WHATSAPP GENERATE QR CODE
+// Whatsapp Generate QR Code
 client.on("qr", (qr) => {
     loggerDev.info("Whatsapp QR Code received");
     qrcode.generate(qr, { small: true });
 });
 
-// WHATSAPP CONNECT
+// Whatsapp Connected
 client.on("ready", async () => {
     const whatsappVersion = await client.getWWebVersion();
 
-    if (!fs.existsSync(`${appRoot}${MEDIA_PATH}`)) {
-        fs.mkdir(`${appRoot}${MEDIA_PATH}`, { recursive: true }, (error) => {
-            if (error) validateGenerateError(error);
-            if (!error) loggerDev.info("Whatsapp public directory has been created!");
+    if (!fs.existsSync(`${appRoot}/..${MEDIA_PATH}` && `${appRoot}/..${UPLOAD_PATH}`)) {
+        const folders: readonly string[] = [`${appRoot}/..${MEDIA_PATH}`, `${appRoot}/..${UPLOAD_PATH}`];
+        folders.forEach((path, i) => {
+            fs.mkdir(path, { recursive: true }, async (error) => {
+                if (error) await validateGenerateError(error);
+                if (!error) {
+                    loggerDev.info(`Whatsapp ${i === 0 ? "public" : "upload"} directory has been created!`);
+                }
+            });
         });
     }
 
@@ -97,15 +109,14 @@ client.on("ready", async () => {
     loggerDev.info(`Whatsapp version ${whatsappVersion}`);
 });
 
-// WHATSAPP AUTH SESSION
+// Whatsapp Authentication
 client.on("authenticated", () => {
     loggerDev.info("Whatsapp authentication success!");
 });
 
-// WHATSAPP GET MESSAGE
+// Whatsapp Get Message
 client.on("message", async (message) => {
     try {
-        // STORE REQUEST DATA
         const waContact = await message.getContact();
         const waName = validateRequestParams(validateRequestEmoji(waContact.pushname), "any");
         const waMessage = validateRequestParams(message.body, "any");
@@ -114,51 +125,49 @@ client.on("message", async (message) => {
 
         let waMedia: string;
 
-        // RECEIVED & SAVE MEDIA
+        // Received & Save Media
         if (message.hasMedia) {
             const mediaAttachment = await message.downloadMedia();
             const mediaAttachmentType = mediaAttachment.mimetype.split("/");
             const [mediaType, mediaExtension] = mediaAttachmentType;
 
-            const mediaFilename = `${validateRequestMoment(new Date(), "datetime2")}_${randomString(9)}`;
+            const mediaFilename = `${validateRequestMoment(new Date(), "datetime2")}_${randomString(5)}`;
             const mediaData = validateRequestParams(mediaAttachment.data, "any");
             const media = `${mediaFilename}.${mediaExtension}`;
 
             const mediaDirectory = MediaTypes[mediaType as keyof typeof MediaTypes];
 
-            // CHECK MEDIA DIRECTORY
-            if (!fs.existsSync(`${appRoot}${MEDIA_PATH}${mediaDirectory}`)) {
-                fs.mkdir(`${appRoot}${MEDIA_PATH}${mediaDirectory}`, { recursive: true }, (error) => {
+            // Check Media Directory
+            if (!fs.existsSync(`${appRoot}/..${MEDIA_PATH}${mediaDirectory}`)) {
+                fs.mkdir(`${appRoot}/..${MEDIA_PATH}${mediaDirectory}`, { recursive: true }, (error) => {
                     if (error) validateGenerateError(error);
-                    if (!error) loggerDev.info("Whatsapp media directory has been created!");
+                    if (!error) {
+                        loggerDev.info("Whatsapp media directory has been created!");
+                    }
                 });
             }
 
-            // CHECK RECEIVED MEDIA (IMAGE, VIDEO, DOCS)
+            // Check Received Extension Media (IMAGE, VIDEO, DOCS)
             if (mediaType in MediaTypes) {
                 const mediaAllowed: RegExp = /png|jpe?g|webp|mp4|pdf/i;
                 const mediaCheck = mediaAllowed.test(path.extname(media));
 
-                // SEND MESSAGE IF EXTENSION NOT ALLOWED
+                // Send Message If Extension Not Allowed
                 if (!mediaCheck) {
-                    return sendRequestMessage(client, waSender, "media extension not allowed! e.g.(PNG, JPEG, JPG, WEBP, MP4, PDF)");
+                    return sendRequestMessage(client, waSender, "media extension not allowed! e.g (PNG, JPEG, JPG, WEBP, MP4, PDF)");
                 }
 
-                // STORE MEDIA TO DIRECTORY
-                fs.writeFile(`${appRoot}${MEDIA_PATH}${mediaDirectory}/${media}`, mediaData, "base64", (error) => {
-                    if (error) validateGenerateError(error);
+                // Store Media To Directory
+                fs.writeFile(`${appRoot}/..${MEDIA_PATH}${mediaDirectory}${media}`, mediaData, "base64", async (error) => {
+                    if (error) await validateGenerateError(error);
                     if (!error) {
                         waMedia = media;
-                        loggerDev.info("Whatsapp media has been downloaded!");
                     }
                 });
             }
         }
 
-        // SEND TEST MESSAGE
-        // await client.sendMessage(`Hallo, ${waName}`)
-
-        // SEND REQUEST WHATSAPP AND GET RESPONSE DATA
+        // Mapping Request Data
         const requestData = {
             name: waName,
             message: validateRequestBuffer(waMessage, "encode"),
@@ -168,71 +177,69 @@ client.on("message", async (message) => {
             sessionId: validateRequestBuffer(waMessage, "encode"),
         };
 
-        // SEND REQUEST WHATSAPP AND RESPONSE DATA
-        // const responseData = await axios
-        //     .post(API_CONNECT, requestData)
-        //     .then((v) => v)
-        //     .catch((error) => error);
+        // Send Request Whatsapp and Get Response Data
+        const responseData = await axios.post(API_CONNECT, requestData);
 
-        // GET REQUEST WHATSAPP AND RESPONSE DATA
-        const responseData = await axios
-            .get(`${API_CONNECT}?name=${waName}&sender=${waSender}&message=${waMessage}&timestamp=${waTimestamp}`)
-            .then((v) => v)
-            .catch((error) => error);
+        // Send Request Whatsapp and Get Response Data
+        // const responseData = await axios.get(`${API_CONNECT}?name=${waName}&sender=${waSender}&message=${waMessage}&timestamp=${waTimestamp}`);
 
-        // SEND WITH MESSAGE
+        // Send Message To Client
         await sendRequestMessage(client, waSender, responseData.data?.message);
 
-        // SEND WITH MESSAGE & MEDIA
+        // Send Message & Media To Client
         // await client.sendMessage(validateRequestHp(sender, "waGateway"), message, { media: MessageMedia.fromFilePath(`${appRoot}${MEDIA_PATH}${mediaDirectory}/${image}`) });
     } catch (error) {
-        validateGenerateError(error);
+        await validateGenerateError(error);
     }
 });
 
-// WHATSAPP CONNECTION
+// Whatsapp Check Connection
 client.on("change_state", (state) => {
     loggerDev.info("Whatsapp connection restarting...", state);
 });
 
-// WHATSAPP DISCONNECT
+// Whatsapp Disconnected
 client.on("disconnected", async (reason) => {
     loggerDev.info("Whatsapp is disconnected!", reason);
 
-    // IF CLIENT DISCONNECT & REMOVE SESSION
+    // If Client Disconnect & Remove Session
     fs.rmSync(`${SESSION_FILE_PATH}/session-${SESSION_CLIENT}`, { recursive: true, force: true });
     await client.destroy();
 });
 
-// WHATSAPP INITALIZE
 client.initialize();
 
-// LOGGER INFO PRODUCTION
-app.use(expressWinston.logger(loggerProd));
+// Info Logger For Production
+app.use(expressWinston.logger(loggerInfo));
 
 // API
-app.post("/whatsapp/send", async (req: Request, res: Response, next: NextFunction) => {
+app.post("/whatsapp/callback", validation(callbackSchema), async (req: Request, res: Response, next: NextFunction) => {
     try {
-        const message = validateRequestParams(req.body.message, "any");
-        const sender = validateRequestParams(req.body.sender, "num");
-
-        if (!message || !sender) {
-            return res.status(BadRequest).send(responseApiError(BadRequest, "parameter not valid!", [message, sender], "message or sender cannot be empty"));
-        }
+        const message = req.body.message;
+        const sender = req.body.sender;
 
         const responseData = await sendRequestMessage(client, sender, message);
-
         return res.status(Ok).send(responseApiSuccess(Ok, "success", responseData.id));
     } catch (error) {
         next(error);
     }
 });
 
-// LOGGER ERROR PRODUCTION
-app.use(expressWinston.errorLogger(loggerProd));
+app.post("/whatsapp/broadcast", upload("file"), async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        return res.status(200).send({ message: "success" });
+    } catch (error) {
+        next(error);
+    }
+});
 
-// MIDDLEWARE RESPONSE ERROR
-app.use((err: any, req: Request, res: Response, next: NextFunction) => res.status(InternalServerError).send(responseApiError(InternalServerError, "internal server error!", [], "")));
+// Error Logger For Production
+app.use(expressWinston.errorLogger(loggerError));
 
-// LISTENING API
+// Middleware Response Error
+app.use((error: any, req: Request, res: Response, next: NextFunction) => {
+    return res.status(InternalServerError).send(responseApiError(InternalServerError, "internal server error!", [], ""));
+});
+
+// Listening Service
 app.listen(PROGRAM_PORT, () => loggerDev.info(`${PROGRAM_NAME} running on port ${PROGRAM_PORT}`));

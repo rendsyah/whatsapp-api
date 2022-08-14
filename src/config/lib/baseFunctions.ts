@@ -1,7 +1,7 @@
 import moment from "moment";
 import crypto from "crypto";
 
-import logger from "../config/logs";
+import logger from "../logs";
 
 export const validateParams = (request: string, regExp: RegExp, changeValue?: string): string => {
     if (changeValue) return request.toString().replace(regExp, changeValue);
@@ -146,7 +146,7 @@ export const sendRequestMessage = async (client: any, sender: string, message: s
     }
 };
 
-export const responseApiError = (status: number, message: string, params: string[] = [], detail: string): any => {
+export const responseApiError = (status: number, message: string, params: (string | number)[] = [], detail: string): any => {
     return {
         apiVersion: "1.0",
         error: {

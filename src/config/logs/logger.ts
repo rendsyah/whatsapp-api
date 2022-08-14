@@ -38,15 +38,22 @@ export const loggerDev = createLogger({
     transports: [loggerTransport.console],
 });
 
-export const loggerExtra = createLogger({
+export const loggerProd = createLogger({
     format: combine(timestamp({ format: "YYYY-MM-DD HH:mm:ss" }), errors({ stack: true }), json()),
     defaultMeta: { service: process.env.PROGRAM_NAME },
     transports: [loggerTransport.loggerInfo, loggerTransport.loggerError],
 });
 
-export const loggerProd = {
+export const loggerInfo = {
     format: combine(timestamp({ format: "YYYY-MM-DD HH:mm:ss" }), json()),
     requestWhitelist: ["body", "query", "params", "method", "originalUrl", "headers.x-forwarded-for", "connection.remoteAddress"],
     responseWhitelist: [...expressWinston.responseWhitelist, "body"],
-    transports: [loggerTransport.loggerInfo, loggerTransport.loggerError],
+    transports: [loggerTransport.loggerInfo],
+};
+
+export const loggerError = {
+    format: combine(timestamp({ format: "YYYY-MM-DD HH:mm:ss" }), json()),
+    requestWhitelist: ["body", "query", "params", "method", "originalUrl", "headers.x-forwarded-for", "connection.remoteAddress"],
+    responseWhitelist: [...expressWinston.responseWhitelist, "body"],
+    transports: [loggerTransport.loggerError],
 };

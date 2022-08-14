@@ -9,22 +9,22 @@ const axiosInstance = axios.create({
 
 axiosInstance.interceptors.request.use(
     (request) => {
-        logger.info(`SEND REQUEST, url: ${request.url}, method: ${request.method}, data: ${JSON.stringify(request.data)}, headers: ${JSON.stringify(request.headers)}`);
+        logger.info(`SEND REQUEST, URL: ${request.url}, METHOD: ${request.method}, DATA: ${JSON.stringify(request.data)}, HEADERS: ${JSON.stringify(request.headers)}`);
         return request;
     },
     (error) => {
-        logger.error(`SEND REQUEST ERROR, error: ${error.message}`);
+        logger.error(`SEND REQUEST ERROR, ERROR: ${error.message}`);
         return Promise.reject(error);
     },
 );
 
 axiosInstance.interceptors.response.use(
     (response) => {
-        logger.info(`RECEIVED RESPONSE, data: ${JSON.stringify(response.data)}, headers: ${JSON.stringify(response.headers)}`);
+        logger.info(`RECEIVED RESPONSE, DATA: ${JSON.stringify(response.data)}, HEADERS: ${JSON.stringify(response.headers)}`);
         return response;
     },
     (error) => {
-        logger.error(`RECEIVED RESPONSE ERROR, error: ${error.message}`);
+        logger.error(`RECEIVED RESPONSE ERROR, ERROR: ${error.message}`);
         return Promise.reject(error);
     },
 );

@@ -8,9 +8,3 @@ export enum HttpResponseStatus {
     InternalServerError = 500,
     BadGateway = 502,
 }
-
-export enum MediaTypes {
-    image = "image",
-    video = "video",
-    application = "docs",
-}
