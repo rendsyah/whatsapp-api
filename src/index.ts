@@ -229,9 +229,8 @@ app.post("/whatsapp/callback", validation(callbackSchema), async (req: Request, 
 app.post("/whatsapp/broadcast", upload("file"), async (req: Request, res: Response, next: NextFunction) => {
     try {
         const filename = req.file?.filename;
-        const readFile = fs.createReadStream(`${appRoot}/..${UPLOAD_PATH}${filename}`);
 
-        return res.status(200).send({ message: "success" });
+        return res.status(Ok).send(responseApiSuccess(Ok, "success"));
     } catch (error) {
         next(error);
     }
