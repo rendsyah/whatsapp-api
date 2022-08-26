@@ -2,18 +2,15 @@ import { NextFunction, Request, Response } from "express";
 import multer, { diskStorage, FileFilterCallback } from "multer";
 import appRoot from "app-root-path";
 
-import { HttpResponseStatus } from "../../config/interfaces/responseStatus.dto";
 import { validateRequestMoment, randomString, responseApiError } from "../../config/lib/baseFunctions";
 
-const { Ok, Created, BadRequest, Unauthorized, Forbidden, NotFound, InternalServerError, BadGateway } = HttpResponseStatus;
-
-const UPLOAD_PATH = process.env.UPLOAD_PATH;
+const WHATSAPP_UPLOAD_PATH = process.env.WHATSAPP_UPLOAD_PATH;
 const SIZE_FILE_MB = process.env.SIZE_FILE_MB ?? 0;
 
-export const upload = (media: string) => {
+export const whatsappUpload = (media: string) => {
     const storage = diskStorage({
         destination: (req: Request, file: Express.Multer.File, cb): void => {
-            cb(null, `${appRoot}/..${UPLOAD_PATH}`);
+            cb(null, `${appRoot}/..${WHATSAPP_UPLOAD_PATH}`);
         },
         filename: (req: Request, file: Express.Multer.File, cb): void => {
             const filename = `${validateRequestMoment(new Date(), "datetime2")}_${randomString(5)}`;
@@ -22,10 +19,11 @@ export const upload = (media: string) => {
     });
 
     const fileFilter = (req: Request, file: Express.Multer.File, cb: FileFilterCallback): void => {
-        if (file.fieldname === media) {
-            if (file && !file.originalname.match(/\.(jpe?g|png|xlsx|csv)$/i)) {
-                return cb(new Error("media not allowed!"));
-            }
+        if (file.fieldname === "file" && !file.originalname.match(/\.(xlsx|csv)$/i)) {
+            return cb(new Error("file not allowed!"));
+        }
+        if (file.fieldname === "image" && !file.originalname.match(/\.(jpe?g|png)$/i)) {
+            return cb(new Error("image not allowed!"));
         }
         cb(null, true);
     };
@@ -44,13 +42,11 @@ export const upload = (media: string) => {
         try {
             uploadMedia(req, res, (error) => {
                 if (!req.file) {
-                    return res.status(BadRequest).send(responseApiError(BadRequest, `${error ? error.message : "parameter not valid!"}`, [], ""));
+                    return res.status(400).send(responseApiError(400, `${error ? error.message : "parameter not valid!"}`, [], ""));
                 }
-
                 if (error && error.code === "LIMIT_FILE_SIZE") {
-                    return res.status(BadRequest).send(responseApiError(BadRequest, "maximum size file 10MB", [], ""));
+                    return res.status(400).send(responseApiError(400, "maximum size file 10MB", [], ""));
                 }
-
                 return next();
             });
         } catch (error) {

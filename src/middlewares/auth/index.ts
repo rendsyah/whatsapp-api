@@ -1,8 +1,9 @@
 import { LocalAuth } from "whatsapp-web.js";
+import { path } from "app-root-path";
 
-export const authWA = (sessionClient: string, sessionPath: string) => {
+export const whatsappAuth = (sessionClient: string, sessionPath: string) => {
     return new LocalAuth({
         clientId: sessionClient,
-        dataPath: sessionPath,
+        dataPath: `${path}${sessionPath}`,
     });
 };

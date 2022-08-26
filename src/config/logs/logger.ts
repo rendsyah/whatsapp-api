@@ -9,7 +9,6 @@ const { combine, colorize, timestamp, printf, json, errors, ms } = format;
 const loggerTransport = {
     console: new transports.Console(),
     loggerInfo: new DailyRotateFile({
-        level: "info",
         filename: `${appRoot}/../logs/${process.env.PROGRAM_NAME}/info/%DATE%.log`,
         datePattern: "YYYY-MM-DD-HH",
         zippedArchive: true,
@@ -18,13 +17,13 @@ const loggerTransport = {
         frequency: "1h",
     }),
     loggerError: new DailyRotateFile({
-        level: "error",
         filename: `${appRoot}/../logs/${process.env.PROGRAM_NAME}/error/%DATE%.log`,
         datePattern: "YYYY-MM-DD-HH",
         zippedArchive: true,
         maxSize: "100m",
         maxFiles: "14d",
         frequency: "1h",
+        level: "error",
     }),
 };
 
