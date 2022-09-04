@@ -1,32 +1,37 @@
-import { Client, Message } from "whatsapp-web.js";
+// Modules
+import { Client, Message, MessageMedia } from "whatsapp-web.js";
 import moment from "moment";
 import crypto from "crypto";
 
-import { ITypeBuffer, ItypeMoment, ITypeParams } from "./interfaces/baseFunctions.interface";
-import logger from "../logs";
+// Interfaces
+import { IResponseApiError, IResponseApiSuccess, ISendMessage, ITypeBuffer, ItypeChar, ItypeMoment, ITypeParams } from "./baseFunctions.interface";
+
+// Providers
+import models from "../../databases/models";
+import { logger } from "../logs";
 
 export const validateParams = (request: string, regExp: RegExp): string => {
-    return request.replace(regExp, "").trim();
+    return request.replace(regExp, "");
 };
 
 export const validateRequestParams = (request: unknown, type: ITypeParams): string => {
-    if (request && typeof request === "string") {
+    if (request && (typeof request === "string" || typeof request === "number")) {
+        const requestString = request.toString();
         switch (type) {
             case "char":
-                return validateParams(request, /[^a-z\d\s]+/gi);
+                return validateParams(requestString, /[^a-z\d\s]+/gi);
             case "charSpace":
-                return validateParams(request, /[^a-zA-Z]/g);
+                return validateParams(requestString, /[^a-zA-Z]/g);
             case "num":
-                return validateParams(request, /[^0-9]+/g);
+                return validateParams(requestString, /[^0-9]+/g);
             case "numChar":
-                return validateParams(request, /[^a-zA-Z0-9]/g);
+                return validateParams(requestString, /[^a-zA-Z0-9]/g);
             case "numCharSpace":
-                return validateParams(request, /[^\w\s]/gi);
+                return validateParams(requestString, /[^\w\s]/gi);
             case "any":
-                return request;
+                return requestString;
         }
     }
-
     return "";
 };
 
@@ -36,7 +41,7 @@ export const validateRequestBuffer = (request: unknown, type: ITypeBuffer): stri
             case "encode":
                 return Buffer.from(request).toString("base64");
             case "decode":
-                return Buffer.from(request, "base64").toString("ascii").toUpperCase();
+                return Buffer.from(request, "base64").toString("ascii");
 
             default:
                 return "";
@@ -75,16 +80,20 @@ export const validateRequestEmoji = (request: string): string => {
     return request.replace(/\p{Extended_Pictographic}/gu, (m: any, idx: any) => `[e-${m.codePointAt(0).toString(16)}]`);
 };
 
-export const randomString = (request: number): string => {
-    const char = "1234567890qwertyuiopasdfghjklzxcvbnm";
-    let result = "";
+export const validateRequestVariable = async (namespace: string, variable: string[]): Promise<string> => {
+    try {
+        let message = "";
+        const getMessage = await models.templates.findOne({ namespace, status: 1 }).then((v) => v?.message ?? "");
 
-    for (let index = 0; index < request; index++) {
-        const random = Math.floor(Math.random() * char.length);
-        result += char[random];
+        if (getMessage) {
+            for (let index = 0; index < variable.length; index++) {
+                message = getMessage.replace(`{{${index + 1}}}`, variable[index]);
+            }
+        }
+        return message;
+    } catch (error) {
+        throw error;
     }
-
-    return result.toUpperCase();
 };
 
 export const validateGenerateError = async (error: unknown): Promise<void> => {
@@ -95,10 +104,35 @@ export const validateGenerateError = async (error: unknown): Promise<void> => {
     }
 };
 
-export const randomHash = async (request: crypto.BinaryLike, encode: crypto.BinaryToTextEncoding): Promise<string> => {
-    if (!request) return "";
+export const randomCharacters = (request: number, type: ItypeChar): string => {
+    let characters = "";
+    let charactersResult = "";
 
+    switch (type) {
+        case "alpha":
+            characters = "qwertyuiopasdfghjklzxcvbnm";
+            break;
+        case "numeric":
+            characters = "1234567890";
+            break;
+        case "alphanumeric":
+            characters = "1234567890qwertyuiopasdfghjklzxcvbnm";
+            break;
+        default:
+            break;
+    }
+
+    for (let index = 0; index < request; index++) {
+        const random = Math.floor(Math.random() * characters.length);
+        charactersResult += characters[random];
+    }
+    return charactersResult.toUpperCase();
+};
+
+export const randomHash = async (request: crypto.BinaryLike, encode: crypto.BinaryToTextEncoding): Promise<string> => {
     try {
+        if (!request) return "";
+
         const randomStr = Math.random().toString(36).substring(7);
         const hash = crypto.createHash("sha256").update(request).digest(encode);
 
@@ -109,33 +143,44 @@ export const randomHash = async (request: crypto.BinaryLike, encode: crypto.Bina
     }
 };
 
-export const randomInt = (...request: number[]): number => {
+export const randomInt = (request: number[]): number => {
     return Math.floor(Math.random() * request.length + 1);
 };
 
-export const sendRequestMessage = async (client: Client, sender: string, message: string): Promise<Message> => {
-    return await client.sendMessage(validateRequestHp(sender), message);
+export const sendRequestMessage = async (request: ISendMessage): Promise<Message | null> => {
+    try {
+        const { whatsappClient, sender, message, link } = request;
+
+        if (whatsappClient instanceof Client) {
+            return await whatsappClient.sendMessage(validateRequestHp(sender), message, link ? { media: await MessageMedia.fromUrl(link, { unsafeMime: true }) } : {});
+        }
+        return null;
+    } catch (error) {
+        throw error;
+    }
 };
 
-export const responseApiError = (status: number, message: string, params: (string | number)[] = [], detail: string): unknown => {
+export const responseApiError = (request: IResponseApiError): unknown => {
+    const { code, message, params, detail } = request;
     return {
         apiVersion: "1.0",
         error: {
-            code: status,
-            message: message,
-            errors: [{ params: params }],
-            detail: detail,
+            code,
+            message,
+            errors: [{ params }],
+            detail,
         },
     };
 };
 
-export const responseApiSuccess = (status: number, message: string, data: unknown = {}): unknown => {
+export const responseApiSuccess = (request: IResponseApiSuccess): unknown => {
+    const { code, status, data } = request;
     return {
         apiVersion: "1.0",
         data: {
-            code: status,
-            message: message,
-            data: data,
+            code,
+            status,
+            data,
         },
     };
 };

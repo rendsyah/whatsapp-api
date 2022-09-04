@@ -1,19 +1,26 @@
+// Modules
 import { NextFunction, Request, Response } from "express";
 import multer, { diskStorage, FileFilterCallback } from "multer";
 import appRoot from "app-root-path";
 
-import { validateRequestMoment, randomString, responseApiError } from "../../config/lib/baseFunctions";
+// Interfaces
+import { IResponseApiError } from "../../config/lib/baseFunctions.interface";
 
+// Providers
+import { validateRequestMoment, randomCharacters, responseApiError } from "../../config/lib/baseFunctions";
+
+// Upload Environments
 const WHATSAPP_UPLOAD_PATH = process.env.WHATSAPP_UPLOAD_PATH;
 const SIZE_FILE_MB = process.env.SIZE_FILE_MB ?? 0;
 
+// Upload Middleware
 export const whatsappUpload = (media: string) => {
     const storage = diskStorage({
         destination: (req: Request, file: Express.Multer.File, cb): void => {
             cb(null, `${appRoot}/..${WHATSAPP_UPLOAD_PATH}`);
         },
         filename: (req: Request, file: Express.Multer.File, cb): void => {
-            const filename = `${validateRequestMoment(new Date(), "datetime2")}_${randomString(5)}`;
+            const filename = `${validateRequestMoment(new Date(), "datetime2")}_${randomCharacters(5, "alphanumeric")}`;
             cb(null, `${filename}.${file.originalname.split(".")[1]}`);
         },
     });
@@ -42,10 +49,22 @@ export const whatsappUpload = (media: string) => {
         try {
             uploadMedia(req, res, (error) => {
                 if (!req.file) {
-                    return res.status(400).send(responseApiError(400, `${error ? error.message : "parameter not valid!"}`, [], ""));
+                    const requestApiError = {
+                        code: 400,
+                        message: `${error ? error.message : "parameter not valid!"}`,
+                        params: [],
+                        detail: "",
+                    };
+                    return res.status(400).send(responseApiError(requestApiError as IResponseApiError));
                 }
                 if (error && error.code === "LIMIT_FILE_SIZE") {
-                    return res.status(400).send(responseApiError(400, "maximum size file 10MB", [], ""));
+                    const requestApiError = {
+                        code: 400,
+                        message: "maximum size file 10MB",
+                        params: [],
+                        detail: "",
+                    };
+                    return res.status(400).send(responseApiError(requestApiError as IResponseApiError));
                 }
                 return next();
             });

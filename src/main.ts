@@ -1,3 +1,4 @@
+// Modules
 import express, { Request, Response, NextFunction } from "express";
 import helmet from "helmet";
 import dotenv from "dotenv";
@@ -5,15 +6,19 @@ import cors from "cors";
 import appRoot from "app-root-path";
 import * as expressWinston from "express-winston";
 
-// Config Environment
 dotenv.config();
 
-import { loggerDev, loggerInfo, loggerError } from "./config/logs/logger";
-import { responseApiError } from "./config/lib/baseFunctions";
-import { whatsappService } from "../src/whatsapp/whatsapp.service";
-import { router } from "./routes";
+// Interfaces
+import { IResponseApiError } from "./config/lib/baseFunctions.interface";
 
-// Config Environment Service
+// Providers
+import { mongoConnection } from "./databases";
+import { whatsappService } from "../src/whatsapp/whatsapp.service";
+import { loggerDev, loggerInfo, loggerError } from "./config/logs/logger";
+import { router } from "./routes";
+import { responseApiError } from "./config/lib/baseFunctions";
+
+// Service Environments
 const PROGRAM_PORT = process.env.PROGRAM_PORT as string;
 const PROGRAM_NAME = process.env.PROGRAM_NAME as string;
 const WHATSAPP_MEDIA_PATH = process.env.WHATSAPP_MEDIA_PATH as string;
@@ -30,6 +35,9 @@ app.use("/image", express.static(`${appRoot}/..${WHATSAPP_MEDIA_PATH}image`));
 app.use("/docs", express.static(`${appRoot}/..${WHATSAPP_MEDIA_PATH}docs`));
 app.use("/video", express.static(`${appRoot}/..${WHATSAPP_MEDIA_PATH}video`));
 
+// Mongo Database Connection
+mongoConnection();
+
 // Whatsapp Initialization
 whatsappService();
 
@@ -44,7 +52,13 @@ app.use(expressWinston.errorLogger(loggerError));
 
 // Middleware Response Error
 app.use((error: any, req: Request, res: Response, next: NextFunction) => {
-    return res.status(500).send(responseApiError(500, "internal server error!", [], ""));
+    const requestApiError = {
+        code: 500,
+        message: "internal server error!",
+        params: [],
+        detail: "",
+    };
+    return res.status(500).send(responseApiError(requestApiError as IResponseApiError));
 });
 
 // Listening Service

@@ -1,24 +1,28 @@
-import { Client, Message, MessageMedia } from "whatsapp-web.js";
+// Modules
+import { Client, Message } from "whatsapp-web.js";
 import qrcode from "qrcode-terminal";
 import fs from "fs";
 import appRoot from "app-root-path";
 
-import { IWhatsappBroadcast, IWhatsappMediaTypes, IWhatsappMessage } from "./interface/whatsapp.interface";
-import { loggerDev } from "../config/logs/logger";
+// Interfaces
+import { IWhatsappMediaTypes } from "./whatsapp.interface";
+import { ISendMessage } from "../config/lib/baseFunctions.interface";
+
+// Providers
 import { whatsappAuth } from "../middlewares";
+import { loggerDev } from "../config/logs/logger";
 import {
     validateRequestParams,
-    validateRequestHp,
     validateRequestBuffer,
     validateGenerateError,
     validateRequestMoment,
     validateRequestEmoji,
-    randomString,
+    randomCharacters,
     sendRequestMessage,
 } from "../config/lib/baseFunctions";
-import axios from "../config/interceptors/axios";
+import { axiosInstance as axios } from "../config/interceptors/axios";
 
-// Config Service
+// Whatsapp Environments
 const WHATSAPP_SESSION_CLIENT = process.env.WHATSAPP_SESSION_CLIENT as string;
 const WHATSAPP_SESSION_PATH = process.env.WHATSAPP_SESSION_PATH as string;
 const WHATSAPP_MEDIA_PATH = process.env.WHATSAPP_MEDIA_PATH as string;
@@ -58,7 +62,7 @@ export const whatsappService = (): void => {
             folders.forEach((path, i) => {
                 fs.mkdir(path, { recursive: true }, async (error) => {
                     if (error) await validateGenerateError(error);
-                    loggerDev.info(`Whatsapp ${i === 0 ? "media" : "upload"} directory has been created!`);
+                    loggerDev.info(`Whatsapp ${!i ? "media" : "upload"} directory has been created!`);
                 });
             });
         }
@@ -85,49 +89,11 @@ export const whatsappService = (): void => {
     // Whatsapp Disconnected
     whatsappClient.on("disconnected", async () => {
         loggerDev.info("Whatsapp is disconnected!");
-
-        // If whatsappClient Disconnect & Remove Session
-        fs.rmSync(`${appRoot}${WHATSAPP_SESSION_PATH}/session`, { recursive: true, force: true });
         await whatsappClient.destroy();
     });
 
     // Whatsapp Initialize
     whatsappClient.initialize();
-};
-
-// Whatsapp Message Service
-export const whatsappMessageService = async (params: IWhatsappMessage): Promise<unknown> => {
-    try {
-        const { sender, message, link } = params;
-
-        let responseData: Message;
-
-        if (link) {
-            responseData = await whatsappClient.sendMessage(validateRequestHp(sender), message, { media: await MessageMedia.fromUrl(link, { unsafeMime: true }) });
-        } else {
-            responseData = await sendRequestMessage(whatsappClient, sender, message);
-        }
-
-        return responseData.id;
-    } catch (error) {
-        throw error;
-    }
-};
-
-// Whatsapp Broadcast Service
-export const whatsappBroadcastService = async (params: IWhatsappBroadcast): Promise<unknown> => {
-    try {
-        const { filename } = params;
-
-        const fileStream = fs.readFile(`${appRoot}/..${WHATSAPP_UPLOAD_PATH}${filename}`, "utf8", (error, data) => {
-            if (error) throw new Error(error.message);
-            return data;
-        });
-
-        return "";
-    } catch (error) {
-        throw error;
-    }
 };
 
 // Whatsapp Connect Service
@@ -140,7 +106,7 @@ const whatsappConnectService = async (message: Message): Promise<void> => {
         const waSender = validateRequestParams(message.from, "num");
         const waTimestamp = validateRequestMoment(new Date(), "datetime");
 
-        const requestData = {
+        const requestConnectService = {
             name: waName,
             message: validateRequestBuffer(waMessage, "encode"),
             sender: waSender,
@@ -149,11 +115,16 @@ const whatsappConnectService = async (message: Message): Promise<void> => {
             sessionId: validateRequestBuffer(waMessage, "encode"),
         };
 
-        const responseData = await axios.post(WHATSAPP_API_CONNECT, requestData);
+        const responseConnectService = await axios.post(WHATSAPP_API_CONNECT, requestConnectService);
+        // const responseConnectService = await axios.get(`${WHATSAPP_API_CONNECT}?name=${waName}&sender=${waSender}&message=${waMessage}&timestamp=${waTimestamp}`);
+        const responseDataMessage = responseConnectService.data?.message ?? "";
 
-        // const responseData = await axios.get(`${WHATSAPP_API_CONNECT}?name=${waName}&sender=${waSender}&message=${waMessage}&timestamp=${waTimestamp}`);
-
-        await sendRequestMessage(whatsappClient, waSender, responseData.data?.message);
+        const requestSendMessage = {
+            whatsappClient,
+            sender: waSender,
+            message: responseDataMessage,
+        };
+        await sendRequestMessage(requestSendMessage as ISendMessage);
     } catch (error) {
         await validateGenerateError(error);
     }
@@ -168,14 +139,14 @@ const whatsappDownloadService = async (message: Message): Promise<string | unkno
         const mediaFileExtension = mediaFile.filename?.split(".")[1] ?? mediaFileMimeType[1];
         const mediaDirectory = IWhatsappMediaTypes[mediaFileType as keyof typeof IWhatsappMediaTypes];
 
-        const mediaFilename = `${validateRequestMoment(new Date(), "datetime2")}_${randomString(5)}`;
+        const mediaFilename = `${validateRequestMoment(new Date(), "datetime2")}_${randomCharacters(5, "alphanumeric")}`;
         const mediaFileData = mediaFile.data;
         const media = `${mediaFilename}.${mediaFileExtension}`;
 
         // Check Media Directory
         if (!fs.existsSync(`${appRoot}/..${WHATSAPP_MEDIA_PATH}${mediaDirectory}`)) {
-            fs.mkdir(`${appRoot}/..${WHATSAPP_MEDIA_PATH}${mediaDirectory}`, { recursive: true }, (error) => {
-                if (error) validateGenerateError(error);
+            fs.mkdir(`${appRoot}/..${WHATSAPP_MEDIA_PATH}${mediaDirectory}`, { recursive: true }, async (error) => {
+                if (error) await validateGenerateError(error);
                 loggerDev.info(`Whatsapp ${mediaDirectory} directory has been created!`);
             });
         }
@@ -188,6 +159,6 @@ const whatsappDownloadService = async (message: Message): Promise<string | unkno
 
         return media;
     } catch (error) {
-        validateGenerateError(error);
+        await validateGenerateError(error);
     }
 };
