@@ -1,23 +1,23 @@
 // Modules
 import { NextFunction, Request, Response } from "express";
-import multer, { diskStorage, FileFilterCallback } from "multer";
-import appRoot from "app-root-path";
+import multer from "multer";
+import appRootPath from "app-root-path";
 
 // Interfaces
-import { IResponseApiError } from "../../config/lib/baseFunctions.interface";
+import { IResponseApiError } from "../../config/lib/interface";
 
-// Providers
+// Common
 import { validateRequestMoment, randomCharacters, responseApiError } from "../../config/lib/baseFunctions";
 
 // Upload Environments
-const WHATSAPP_UPLOAD_PATH = process.env.WHATSAPP_UPLOAD_PATH;
-const SIZE_FILE_MB = process.env.SIZE_FILE_MB ?? 0;
+const WHATSAPP_UPLOAD_PATH = process.env.WHATSAPP_UPLOAD_PATH as string;
+const WHATSAPP_SIZE_FILE_MB = process.env.WHATSAPP_SIZE_FILE_MB as string;
 
 // Upload Middleware
 export const whatsappUpload = (media: string) => {
-    const storage = diskStorage({
+    const storage = multer.diskStorage({
         destination: (req: Request, file: Express.Multer.File, cb): void => {
-            cb(null, `${appRoot}/..${WHATSAPP_UPLOAD_PATH}`);
+            cb(null, `${appRootPath}/..${WHATSAPP_UPLOAD_PATH}`);
         },
         filename: (req: Request, file: Express.Multer.File, cb): void => {
             const filename = `${validateRequestMoment(new Date(), "datetime2")}_${randomCharacters(5, "alphanumeric")}`;
@@ -25,7 +25,7 @@ export const whatsappUpload = (media: string) => {
         },
     });
 
-    const fileFilter = (req: Request, file: Express.Multer.File, cb: FileFilterCallback): void => {
+    const fileFilter = (req: Request, file: Express.Multer.File, cb: multer.FileFilterCallback): void => {
         if (file.fieldname === "file" && !file.originalname.match(/\.(xlsx|csv)$/i)) {
             return cb(new Error("file not allowed!"));
         }
@@ -35,7 +35,7 @@ export const whatsappUpload = (media: string) => {
         cb(null, true);
     };
 
-    const maxSize = +SIZE_FILE_MB * 1000 * 1000;
+    const maxSize = +WHATSAPP_SIZE_FILE_MB * 1000 * 1000;
 
     const uploadMedia = multer({
         storage,
@@ -48,21 +48,12 @@ export const whatsappUpload = (media: string) => {
     return async (req: Request, res: Response, next: NextFunction) => {
         try {
             uploadMedia(req, res, (error) => {
-                if (!req.file) {
+                if (!req.file || (error && error.code === "LIMIT_FILE_SIZE")) {
                     const requestApiError = {
                         code: 400,
-                        message: `${error ? error.message : "parameter not valid!"}`,
+                        status: "Bad Request",
                         params: [],
-                        detail: "",
-                    };
-                    return res.status(400).send(responseApiError(requestApiError as IResponseApiError));
-                }
-                if (error && error.code === "LIMIT_FILE_SIZE") {
-                    const requestApiError = {
-                        code: 400,
-                        message: "maximum size file 10MB",
-                        params: [],
-                        detail: "",
+                        detail: error?.message ?? "",
                     };
                     return res.status(400).send(responseApiError(requestApiError as IResponseApiError));
                 }

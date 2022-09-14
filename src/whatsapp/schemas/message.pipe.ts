@@ -2,12 +2,7 @@
 import Joi from "joi";
 
 // Interfaces
-import { IWhatsappBroadcast, IWhatsappMessage } from "./whatsapp.interface";
-
-// Broadcast Schemas
-export const whatsappBroadcastSchema = Joi.object<IWhatsappBroadcast>({
-    namespace: Joi.string().required(),
-});
+import { IWhatsappMessage } from "../interfaces/message.interface";
 
 // Message Schemas
 export const whatsappMessageSchema = Joi.object<IWhatsappMessage>({

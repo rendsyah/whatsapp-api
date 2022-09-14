@@ -16,13 +16,13 @@ export interface ISendMessage {
 
 export interface IResponseApiError {
     code: number;
-    message: string;
-    params: string | number[];
+    status: string;
+    params: string[] | number[];
     detail: string;
 }
 
 export interface IResponseApiSuccess {
     code: number;
     status: string;
-    data: unknown;
+    data: any;
 }

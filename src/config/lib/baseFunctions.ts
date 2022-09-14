@@ -4,11 +4,11 @@ import moment from "moment";
 import crypto from "crypto";
 
 // Interfaces
-import { IResponseApiError, IResponseApiSuccess, ISendMessage, ITypeBuffer, ItypeChar, ItypeMoment, ITypeParams } from "./baseFunctions.interface";
+import { IResponseApiError, IResponseApiSuccess, ISendMessage, ITypeBuffer, ItypeChar, ItypeMoment, ITypeParams } from "./interface";
 
-// Providers
-import models from "../../databases/models";
+// Common
 import { logger } from "../logs";
+import models from "../../databases/models";
 
 export const validateParams = (request: string, regExp: RegExp): string => {
     return request.replace(regExp, "");
@@ -83,11 +83,11 @@ export const validateRequestEmoji = (request: string): string => {
 export const validateRequestVariable = async (namespace: string, variable: string[]): Promise<string> => {
     try {
         let message = "";
-        const getMessage = await models.templates.findOne({ namespace, status: 1 }).then((v) => v?.message ?? "");
+        const templateMessage = await models.Templates.findOne({ namespace, status: 1 });
 
-        if (getMessage) {
+        if (templateMessage) {
             for (let index = 0; index < variable.length; index++) {
-                message = getMessage.replace(`{{${index + 1}}}`, variable[index]);
+                message = templateMessage.message.replace(`{{${index + 1}}}`, variable[index]);
             }
         }
         return message;
@@ -161,12 +161,12 @@ export const sendRequestMessage = async (request: ISendMessage): Promise<Message
 };
 
 export const responseApiError = (request: IResponseApiError): unknown => {
-    const { code, message, params, detail } = request;
+    const { code, status, params, detail } = request;
     return {
         apiVersion: "1.0",
         error: {
             code,
-            message,
+            status,
             errors: [{ params }],
             detail,
         },
@@ -180,7 +180,7 @@ export const responseApiSuccess = (request: IResponseApiSuccess): unknown => {
         data: {
             code,
             status,
-            data,
+            ...data,
         },
     };
 };

@@ -2,32 +2,24 @@
 import { Client, Message } from "whatsapp-web.js";
 import qrcode from "qrcode-terminal";
 import fs from "fs";
-import appRoot from "app-root-path";
+import appRootPath from "app-root-path";
 
 // Interfaces
 import { IWhatsappMediaTypes } from "./whatsapp.interface";
-import { ISendMessage } from "../config/lib/baseFunctions.interface";
 
-// Providers
+// Commons
 import { whatsappAuth } from "../middlewares";
 import { loggerDev } from "../config/logs/logger";
-import {
-    validateRequestParams,
-    validateRequestBuffer,
-    validateGenerateError,
-    validateRequestMoment,
-    validateRequestEmoji,
-    randomCharacters,
-    sendRequestMessage,
-} from "../config/lib/baseFunctions";
-import { axiosInstance as axios } from "../config/interceptors/axios";
+import { validateRequestParams, validateRequestBuffer, validateGenerateError, validateRequestMoment, validateRequestEmoji, randomCharacters } from "../config/lib/baseFunctions";
+
+// Processor
+import { queues } from "./whatsapp.process";
 
 // Whatsapp Environments
 const WHATSAPP_SESSION_CLIENT = process.env.WHATSAPP_SESSION_CLIENT as string;
 const WHATSAPP_SESSION_PATH = process.env.WHATSAPP_SESSION_PATH as string;
 const WHATSAPP_MEDIA_PATH = process.env.WHATSAPP_MEDIA_PATH as string;
 const WHATSAPP_UPLOAD_PATH = process.env.WHATSAPP_UPLOAD_PATH as string;
-const WHATSAPP_API_CONNECT = process.env.WHATSAPP_API_CONNECT as string;
 
 // Whatsapp Client
 export const whatsappClient = new Client({
@@ -43,7 +35,7 @@ export const whatsappClient = new Client({
 // Whatsapp Initialization Service
 export const whatsappService = (): void => {
     // Whatsapp Restore Auth Session
-    if (fs.existsSync(`${appRoot}${WHATSAPP_SESSION_PATH}`)) {
+    if (fs.existsSync(`${appRootPath}${WHATSAPP_SESSION_PATH}`)) {
         loggerDev.info("Whatsapp restoring session...");
     }
 
@@ -57,23 +49,23 @@ export const whatsappService = (): void => {
     whatsappClient.on("ready", async () => {
         const whatsappVersion = await whatsappClient.getWWebVersion();
 
-        if (!fs.existsSync(`${appRoot}/..${WHATSAPP_MEDIA_PATH}` && `${appRoot}/..${WHATSAPP_UPLOAD_PATH}`)) {
-            const folders: readonly string[] = [`${appRoot}/..${WHATSAPP_MEDIA_PATH}`, `${appRoot}/..${WHATSAPP_UPLOAD_PATH}`];
+        if (!fs.existsSync(`${appRootPath}/..${WHATSAPP_MEDIA_PATH}` && `${appRootPath}/..${WHATSAPP_UPLOAD_PATH}`)) {
+            const folders: readonly string[] = [`${appRootPath}/..${WHATSAPP_MEDIA_PATH}`, `${appRootPath}/..${WHATSAPP_UPLOAD_PATH}`];
             folders.forEach((path, i) => {
                 fs.mkdir(path, { recursive: true }, async (error) => {
                     if (error) await validateGenerateError(error);
-                    loggerDev.info(`Whatsapp ${!i ? "media" : "upload"} directory has been created!`);
+                    loggerDev.info(`Whatsapp ${!i ? "media" : "upload"} directory has been created`);
                 });
             });
         }
 
-        loggerDev.info("Whatsapp is connected!");
+        loggerDev.info("Whatsapp is connected");
         loggerDev.info(`Whatsapp version ${whatsappVersion}`);
     });
 
     // Whatsapp Authentication
     whatsappClient.on("authenticated", () => {
-        loggerDev.info("Whatsapp authentication success!");
+        loggerDev.info("Whatsapp authentication success");
     });
 
     // Whatsapp Get Message
@@ -82,13 +74,21 @@ export const whatsappService = (): void => {
     });
 
     // Whatsapp Check Connection
-    whatsappClient.on("change_state", () => {
-        loggerDev.info("Whatsapp connection restarting...");
+    whatsappClient.on("change_state", (state) => {
+        if (state === "OPENING") {
+            loggerDev.info("Whatsapp connection restarting...");
+        }
+        if (state === "PAIRING") {
+            loggerDev.info("Whatsapp connection pairing...");
+        }
+        if (state === "CONNECTED") {
+            loggerDev.info("Whatsapp connection connected");
+        }
     });
 
     // Whatsapp Disconnected
     whatsappClient.on("disconnected", async () => {
-        loggerDev.info("Whatsapp is disconnected!");
+        loggerDev.info("Whatsapp is disconnected");
         await whatsappClient.destroy();
     });
 
@@ -112,19 +112,10 @@ const whatsappConnectService = async (message: Message): Promise<void> => {
             sender: waSender,
             media: "300",
             rcvdTime: waTimestamp,
-            sessionId: validateRequestBuffer(waMessage, "encode"),
+            photo: validateRequestBuffer(waMedia, "encode"),
         };
 
-        const responseConnectService = await axios.post(WHATSAPP_API_CONNECT, requestConnectService);
-        // const responseConnectService = await axios.get(`${WHATSAPP_API_CONNECT}?name=${waName}&sender=${waSender}&message=${waMessage}&timestamp=${waTimestamp}`);
-        const responseDataMessage = responseConnectService.data?.message ?? "";
-
-        const requestSendMessage = {
-            whatsappClient,
-            sender: waSender,
-            message: responseDataMessage,
-        };
-        await sendRequestMessage(requestSendMessage as ISendMessage);
+        await queues.connectQueue.add(requestConnectService);
     } catch (error) {
         await validateGenerateError(error);
     }
@@ -143,16 +134,14 @@ const whatsappDownloadService = async (message: Message): Promise<string | unkno
         const mediaFileData = mediaFile.data;
         const media = `${mediaFilename}.${mediaFileExtension}`;
 
-        // Check Media Directory
-        if (!fs.existsSync(`${appRoot}/..${WHATSAPP_MEDIA_PATH}${mediaDirectory}`)) {
-            fs.mkdir(`${appRoot}/..${WHATSAPP_MEDIA_PATH}${mediaDirectory}`, { recursive: true }, async (error) => {
+        if (!fs.existsSync(`${appRootPath}/..${WHATSAPP_MEDIA_PATH}${mediaDirectory}`)) {
+            fs.mkdir(`${appRootPath}/..${WHATSAPP_MEDIA_PATH}${mediaDirectory}`, { recursive: true }, async (error) => {
                 if (error) await validateGenerateError(error);
                 loggerDev.info(`Whatsapp ${mediaDirectory} directory has been created!`);
             });
         }
 
-        // Store Media To Directory
-        fs.writeFile(`${appRoot}/..${WHATSAPP_MEDIA_PATH}${mediaDirectory}${media}`, mediaFileData, "base64", async (error) => {
+        fs.writeFile(`${appRootPath}/..${WHATSAPP_MEDIA_PATH}${mediaDirectory}${media}`, mediaFileData, "base64", async (error) => {
             if (error) await validateGenerateError(error);
             return true;
         });

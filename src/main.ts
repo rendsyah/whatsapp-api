@@ -4,15 +4,16 @@ import helmet from "helmet";
 import dotenv from "dotenv";
 import cors from "cors";
 import appRoot from "app-root-path";
-import * as expressWinston from "express-winston";
+import expressWinston from "express-winston";
 
 dotenv.config();
 
 // Interfaces
-import { IResponseApiError } from "./config/lib/baseFunctions.interface";
+import { IResponseApiError } from "./config/lib/interface";
 
-// Providers
+// Commons
 import { mongoConnection } from "./databases";
+import { bullRouter } from "./whatsapp/whatsapp.process";
 import { whatsappService } from "../src/whatsapp/whatsapp.service";
 import { loggerDev, loggerInfo, loggerError } from "./config/logs/logger";
 import { router } from "./routes";
@@ -44,6 +45,9 @@ whatsappService();
 // Info Logger For Production
 app.use(expressWinston.logger(loggerInfo));
 
+// Bull Dashboard Queues
+app.use("/admin/queues", bullRouter.router);
+
 // Grouping API
 app.use("/api", router);
 
@@ -52,12 +56,14 @@ app.use(expressWinston.errorLogger(loggerError));
 
 // Middleware Response Error
 app.use((error: any, req: Request, res: Response, next: NextFunction) => {
+    console.log(error);
     const requestApiError = {
-        code: 500,
-        message: "internal server error!",
-        params: [],
-        detail: "",
+        code: error.code || 500,
+        status: error.status || "Internal Server Error",
+        params: error.params || [],
+        detail: error.detail || error.message,
     };
+
     return res.status(500).send(responseApiError(requestApiError as IResponseApiError));
 });
 

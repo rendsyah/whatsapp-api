@@ -1,6 +1,6 @@
 // Modules
-import * as winston from "winston";
-import * as expressWinston from "express-winston";
+import winston from "winston";
+import expressWinston from "express-winston";
 import DailyRotateFile from "winston-daily-rotate-file";
 import appRoot from "app-root-path";
 

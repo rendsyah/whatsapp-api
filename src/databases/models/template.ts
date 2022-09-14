@@ -1,12 +1,12 @@
 // Modules
-import { Document, Schema, model } from "mongoose";
+import { Document, Schema, model, Types } from "mongoose";
 
 // Interface
 interface ITemplates extends Document {
     namespace: string;
     message: string;
-    service: string;
     status: number;
+    channel: any;
 }
 
 // Template Schema
@@ -21,14 +21,16 @@ const templatesSchema = new Schema<ITemplates>(
             type: String,
             default: "",
         },
-        service: {
-            type: String,
-            required: true,
-        },
         status: {
             type: Number,
             default: 1,
         },
+        channel: [
+            {
+                type: Types.ObjectId,
+                ref: "Channels",
+            },
+        ],
     },
     {
         timestamps: {
@@ -38,4 +40,4 @@ const templatesSchema = new Schema<ITemplates>(
     },
 );
 
-export default model<ITemplates>("templates", templatesSchema);
+export default model<ITemplates>("Templates", templatesSchema);

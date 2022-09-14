@@ -1,6 +1,8 @@
 // Model Schemas
-import templates from "./template";
+import Channels from "./channel";
+import Templates from "./template";
 
 export default {
-    templates,
+    Channels,
+    Templates,
 };

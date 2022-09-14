@@ -1,27 +1,27 @@
 // Modules
 import { Request, Response, NextFunction } from "express";
-import Joi from "joi";
+import { ObjectSchema, ValidationError } from "joi";
 
 // Interfaces
-import { IResponseApiError } from "../../config/lib/baseFunctions.interface";
+import { IResponseApiError } from "../../config/lib/interface";
 
-// Providers
+// Common
 import { validateRequestParams, responseApiError } from "../../config/lib/baseFunctions";
 
 // Validation Middleware
-export const whatsappValidation = (schema: Joi.ObjectSchema) => {
+export const whatsappValidation = (schema: ObjectSchema) => {
     return async (req: Request, res: Response, next: NextFunction) => {
         try {
             const validated = await schema.validateAsync(req.body);
             req.body = validated;
             next();
         } catch (error: unknown) {
-            if (error instanceof Joi.ValidationError) {
+            if (error instanceof ValidationError) {
                 const { details } = error;
                 const requestApiError = {
                     code: 400,
-                    message: "parameter not valid!",
-                    params: validateRequestParams(details[0].path[0], "char"),
+                    status: "Bad Request",
+                    params: details[0].path,
                     detail: validateRequestParams(details[0].message, "char"),
                 };
                 return res.status(400).send(responseApiError(requestApiError as IResponseApiError));
