@@ -5,7 +5,7 @@ import { ObjectSchema, ValidationError } from "joi";
 // Interfaces
 import { IResponseApiError } from "../../config/lib/interface";
 
-// Common
+// Commons
 import { validateRequestParams, responseApiError } from "../../config/lib/baseFunctions";
 
 // Validation Middleware
@@ -15,7 +15,7 @@ export const whatsappValidation = (schema: ObjectSchema) => {
             const validated = await schema.validateAsync(req.body);
             req.body = validated;
             next();
-        } catch (error: unknown) {
+        } catch (error) {
             if (error instanceof ValidationError) {
                 const { details } = error;
                 const requestApiError = {

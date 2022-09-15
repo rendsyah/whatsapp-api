@@ -14,7 +14,7 @@ import {
 } from "../interfaces/template.interface";
 import { IResponseApiSuccess } from "../../config/lib/interface";
 
-// Common
+// Commons
 import {
     whatsappTemplateCreateService,
     whatsappTemplateDeleteService,

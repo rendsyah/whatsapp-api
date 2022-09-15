@@ -1,5 +1,8 @@
 // Modules
 import express, { Request, Response, NextFunction } from "express";
+import { createBullBoard } from "@bull-board/api";
+import { BullAdapter } from "@bull-board/api/bullAdapter";
+import { ExpressAdapter } from "@bull-board/express";
 import helmet from "helmet";
 import dotenv from "dotenv";
 import cors from "cors";
@@ -12,8 +15,8 @@ dotenv.config();
 import { IResponseApiError } from "./config/lib/interface";
 
 // Commons
+import { queues } from "./whatsapp/whatsapp.process";
 import { mongoConnection } from "./databases";
-import { bullRouter } from "./whatsapp/whatsapp.process";
 import { whatsappService } from "../src/whatsapp/whatsapp.service";
 import { loggerDev, loggerInfo, loggerError } from "./config/logs/logger";
 import { router } from "./routes";
@@ -26,6 +29,12 @@ const WHATSAPP_MEDIA_PATH = process.env.WHATSAPP_MEDIA_PATH as string;
 
 // Init Express
 const app = express();
+
+// Config Bull Queues
+const serverAdapter = new ExpressAdapter();
+serverAdapter.setBasePath("/admin/queues");
+
+createBullBoard({ queues: [new BullAdapter(queues.connectQueue, { allowRetries: false })], serverAdapter });
 
 // Config API Service
 app.use(cors());
@@ -45,8 +54,8 @@ whatsappService();
 // Info Logger For Production
 app.use(expressWinston.logger(loggerInfo));
 
-// Bull Dashboard Queues
-app.use("/admin/queues", bullRouter.router);
+// Grouping Queues
+app.use("/admin/queues", serverAdapter.getRouter());
 
 // Grouping API
 app.use("/api", router);

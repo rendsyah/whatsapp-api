@@ -18,7 +18,7 @@ import {
 import { IWhatsappResponseService } from "../interfaces/service.interface";
 import { ISendMessage } from "../../config/lib/interface";
 
-// Common
+// Commons
 import { whatsappClient } from "../whatsapp.service";
 import { BadRequestException, NotFoundException } from "../../config/lib/baseClasses";
 import { validateRequestParams, validateRequestVariable, sendRequestMessage } from "../../config/lib/baseFunctions";

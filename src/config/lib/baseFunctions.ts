@@ -1,12 +1,12 @@
 // Modules
-import { Client, Message, MessageMedia } from "whatsapp-web.js";
+import { Client, MessageMedia } from "whatsapp-web.js";
 import moment from "moment";
 import crypto from "crypto";
 
 // Interfaces
 import { IResponseApiError, IResponseApiSuccess, ISendMessage, ITypeBuffer, ItypeChar, ItypeMoment, ITypeParams } from "./interface";
 
-// Common
+// Commons
 import { logger } from "../logs";
 import models from "../../databases/models";
 
@@ -147,16 +147,17 @@ export const randomInt = (request: number[]): number => {
     return Math.floor(Math.random() * request.length + 1);
 };
 
-export const sendRequestMessage = async (request: ISendMessage): Promise<Message | null> => {
+export const sendRequestMessage = async (request: ISendMessage): Promise<unknown> => {
     try {
         const { whatsappClient, sender, message, link } = request;
 
         if (whatsappClient instanceof Client) {
-            return await whatsappClient.sendMessage(validateRequestHp(sender), message, link ? { media: await MessageMedia.fromUrl(link, { unsafeMime: true }) } : {});
+            const responseSendMessage = await whatsappClient.sendMessage(validateRequestHp(sender), message, link ? { media: await MessageMedia.fromUrl(link, { unsafeMime: true }) } : {});
+            return responseSendMessage.id;
         }
         return null;
     } catch (error) {
-        throw error;
+        validateGenerateError(error);
     }
 };
 

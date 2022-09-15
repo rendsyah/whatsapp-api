@@ -1,7 +1,7 @@
 // Modules
 import { connect, connection } from "mongoose";
 
-// Logger
+// Commons
 import { loggerDev } from "../config/logs/logger";
 
 // Database Environments

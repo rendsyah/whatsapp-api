@@ -115,7 +115,7 @@ const whatsappConnectService = async (message: Message): Promise<void> => {
             photo: validateRequestBuffer(waMedia, "encode"),
         };
 
-        await queues.connectQueue.add(requestConnectService);
+        await queues.connectQueue.add("connectApi", requestConnectService);
     } catch (error) {
         await validateGenerateError(error);
     }

@@ -1,7 +1,5 @@
 // Modules
 import Queue from "bull";
-import { createBullBoard } from "bull-board";
-import { BullAdapter } from "bull-board/bullAdapter";
 
 // Interfaces
 import { IWhatsappConnectProcess } from "./whatsapp.interface";
@@ -19,10 +17,8 @@ const WHATSAPP_API_CONNECT = process.env.WHATSAPP_API_CONNECT as string;
 const DATABASE_REDIS_HOST = process.env.DATABASE_REDIS_HOST as string;
 
 export const queues = {
-    connectQueue: new Queue("Connect Service", DATABASE_REDIS_HOST, { defaultJobOptions: { attempts: 10, backoff: 5000, timeout: 60000 } }),
+    connectQueue: new Queue("Connect Api", DATABASE_REDIS_HOST, { defaultJobOptions: { attempts: 10, backoff: 5000, timeout: 60000 } }),
 };
-
-export const bullRouter = createBullBoard([new BullAdapter(queues.connectQueue)]);
 
 const whatsappConnectProcess = async (params: IWhatsappConnectProcess): Promise<string> => {
     // Connect Service With Body
@@ -37,26 +33,29 @@ const whatsappConnectProcess = async (params: IWhatsappConnectProcess): Promise<
     // ExpressJs
     const responseDataMessage = responseConnectService.data?.message ?? "something went wrong...";
 
-    const requestSendMessage = {
-        whatsappClient,
-        sender: params.sender,
-        message: responseDataMessage,
-    };
-
-    await sendRequestMessage(requestSendMessage as ISendMessage);
-
     return responseDataMessage;
 };
 
-queues.connectQueue.process((job: Queue.Job): Promise<string> => {
+queues.connectQueue.process("connectApi", (job: Queue.Job): Promise<string> => {
     return whatsappConnectProcess({ ...job.data });
 });
 
-queues.connectQueue.on("completed", async (job: Queue.Job, result: string) => {
-    job.progress(100);
+queues.connectQueue.on("failed", (job: Queue.Job, error) => {
+    if (error) {
+        for (let index = 0; index < job.stacktrace.length; index++) {
+            const reasonError = job.stacktrace[index];
+            job.log(`Reason : ${reasonError || job.failedReason}`);
+        }
+        job.progress(50);
+    }
 });
 
-queues.connectQueue.on("failed", (job: Queue.Job, reason: string) => {
-    job.log(`Reason: ${reason}`);
-    job.progress(50);
+queues.connectQueue.on("completed", async (job: Queue.Job, result) => {
+    const requestSendMessage = {
+        whatsappClient,
+        sender: job.data.sender,
+        message: result,
+    };
+    await sendRequestMessage(requestSendMessage as ISendMessage);
+    job.progress(100);
 });

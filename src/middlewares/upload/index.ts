@@ -6,7 +6,7 @@ import appRootPath from "app-root-path";
 // Interfaces
 import { IResponseApiError } from "../../config/lib/interface";
 
-// Common
+// Commons
 import { validateRequestMoment, randomCharacters, responseApiError } from "../../config/lib/baseFunctions";
 
 // Upload Environments

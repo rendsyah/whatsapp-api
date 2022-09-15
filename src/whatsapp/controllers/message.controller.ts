@@ -6,7 +6,7 @@ import { IWhatsappResponseService } from "../interfaces/service.interface";
 import { IWhatsappMessage } from "../interfaces/message.interface";
 import { IResponseApiSuccess } from "../../config/lib/interface";
 
-// Common
+// Commons
 import { whatsappMessageService } from "../services/message.service";
 import { responseApiSuccess } from "../../config/lib/baseFunctions";
 

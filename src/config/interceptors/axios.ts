@@ -1,7 +1,7 @@
 // Modules
 import axios from "axios";
 
-// Logger
+// Commons
 import { logger } from "../logs";
 
 // Axios

@@ -20,7 +20,7 @@ export const whatsappMessageService = async (params: IWhatsappMessage): Promise<
         };
 
         const responseData = await sendRequestMessage(requestSendMessage as ISendMessage);
-        return { data: responseData?.id };
+        return { data: responseData };
     } catch (error) {
         throw error;
     }
