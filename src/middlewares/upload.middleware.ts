@@ -4,10 +4,10 @@ import multer from "multer";
 import appRootPath from "app-root-path";
 
 // Interfaces
-import { IResponseApiError } from "../../config/lib/interface";
+import { IRequestDataError } from "../config/lib/interface";
 
 // Commons
-import { validateRequestMoment, randomCharacters, responseApiError } from "../../config/lib/baseFunctions";
+import { validateRequestMoment, randomCharacters, responseApiError } from "../config/lib/baseFunctions";
 
 // Upload Environments
 const WHATSAPP_UPLOAD_PATH = process.env.WHATSAPP_UPLOAD_PATH as string;
@@ -32,6 +32,7 @@ export const whatsappUpload = (media: string) => {
         if (file.fieldname === "image" && !file.originalname.match(/\.(jpe?g|png)$/i)) {
             return cb(new Error("image not allowed!"));
         }
+
         cb(null, true);
     };
 
@@ -49,14 +50,16 @@ export const whatsappUpload = (media: string) => {
         try {
             uploadMedia(req, res, (error) => {
                 if (!req.file || (error && error.code === "LIMIT_FILE_SIZE")) {
-                    const requestApiError = {
+                    const requestResponseData: IRequestDataError = {
                         code: 400,
                         status: "Bad Request",
-                        params: [],
+                        params: "",
                         detail: error?.message ?? "",
                     };
-                    return res.status(400).send(responseApiError(requestApiError as IResponseApiError));
+
+                    return res.status(400).send(responseApiError(requestResponseData));
                 }
+
                 return next();
             });
         } catch (error) {

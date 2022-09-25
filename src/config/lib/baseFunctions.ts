@@ -1,13 +1,12 @@
 // Modules
-import { Client, MessageMedia } from "whatsapp-web.js";
 import moment from "moment";
 import crypto from "crypto";
 
 // Interfaces
-import { IResponseApiError, IResponseApiSuccess, ISendMessage, ITypeBuffer, ItypeChar, ItypeMoment, ITypeParams } from "./interface";
+import { IRequestDataError, IRequestDataSuccess, ITypeBuffer, ItypeChar, ItypeMoment, ITypeParams } from "./interface";
 
 // Commons
-import { logger } from "../logs";
+import logger from "../logs";
 import models from "../../databases/models";
 
 export const validateParams = (request: string, regExp: RegExp): string => {
@@ -96,12 +95,8 @@ export const validateRequestVariable = async (namespace: string, variable: strin
     }
 };
 
-export const validateGenerateError = async (error: unknown): Promise<void> => {
-    try {
-        if (error) throw new Error(error as string);
-    } catch (error) {
-        logger.error(error);
-    }
+export const validateGenerateError = (error: unknown): void => {
+    logger.error(error);
 };
 
 export const randomCharacters = (request: number, type: ItypeChar): string => {
@@ -147,34 +142,20 @@ export const randomInt = (request: number[]): number => {
     return Math.floor(Math.random() * request.length + 1);
 };
 
-export const sendRequestMessage = async (request: ISendMessage): Promise<unknown> => {
-    try {
-        const { whatsappClient, sender, message, link } = request;
-
-        if (whatsappClient instanceof Client) {
-            const responseSendMessage = await whatsappClient.sendMessage(validateRequestHp(sender), message, link ? { media: await MessageMedia.fromUrl(link, { unsafeMime: true }) } : {});
-            return responseSendMessage.id;
-        }
-        return null;
-    } catch (error) {
-        validateGenerateError(error);
-    }
-};
-
-export const responseApiError = (request: IResponseApiError): unknown => {
+export const responseApiError = (request: IRequestDataError): unknown => {
     const { code, status, params, detail } = request;
     return {
         apiVersion: "1.0",
         error: {
             code,
             status,
-            errors: [{ params }],
+            errors: [{ params: [params] }],
             detail,
         },
     };
 };
 
-export const responseApiSuccess = (request: IResponseApiSuccess): unknown => {
+export const responseApiSuccess = (request: IRequestDataSuccess): unknown => {
     const { code, status, data } = request;
     return {
         apiVersion: "1.0",

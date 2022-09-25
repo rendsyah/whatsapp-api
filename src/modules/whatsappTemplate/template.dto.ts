@@ -1,9 +1,4 @@
 // Interfaces Template
-export interface IWhatsappTemplate {
-    namespace: string;
-    filename: string;
-}
-
 export interface IWhatsappTemplateCreate {
     namespace: string;
     message: string;

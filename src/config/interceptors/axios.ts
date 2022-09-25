@@ -2,17 +2,22 @@
 import axios from "axios";
 
 // Commons
-import { logger } from "../logs";
+import logger from "../logs";
 
 // Axios
 export const axiosInstance = axios.create({
     timeout: 60000,
+    timeoutErrorMessage: "REQUEST TIMEOUT (60s)",
 });
 
 // Axios Request Interceptors
 axiosInstance.interceptors.request.use(
     (request) => {
-        logger.info(`SEND REQUEST, URL: ${request.url}, METHOD: ${request.method}, DATA: ${JSON.stringify(request.data)}, HEADERS: ${JSON.stringify(request.headers)}`);
+        logger.info(
+            `SEND REQUEST, URL: ${request.url}, METHOD: ${request.method}, DATA: ${JSON.stringify(request.data)}, HEADERS: ${JSON.stringify(
+                request.headers,
+            )}`,
+        );
         return request;
     },
     (error) => {

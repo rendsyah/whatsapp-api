@@ -1,5 +1,6 @@
 // Loggers
 import { loggerDev, loggerProd } from "./logger";
 
-// Setting Loggers
-export const logger = process.env.NODE_ENV === "development" ? loggerDev : loggerProd;
+const logger = process.env.NODE_ENV === "development" ? loggerDev : loggerProd;
+
+export default logger;

@@ -7,21 +7,14 @@ export type ItypeMoment = "date" | "datetime" | "datetime2";
 
 export type ItypeChar = "alpha" | "numeric" | "alphanumeric";
 
-export interface ISendMessage {
-    whatsappClient: unknown;
-    sender: string;
-    message: string;
-    link?: string;
-}
-
-export interface IResponseApiError {
+export interface IRequestDataError {
     code: number;
     status: string;
-    params: string[] | number[];
+    params: string;
     detail: string;
 }
 
-export interface IResponseApiSuccess {
+export interface IRequestDataSuccess {
     code: number;
     status: string;
     data: any;

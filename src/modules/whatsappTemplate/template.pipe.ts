@@ -3,21 +3,18 @@ import Joi from "joi";
 
 // Interfaces
 import {
-    IWhatsappTemplate,
     IWhatsappTemplateCreate,
     IWhatsappTemplateDownload,
     IWhatsappTemplateGet,
     IWhatsappTemplateGetAll,
     IWhatsappTemplateUpdate,
-} from "../interfaces/template.interface";
+} from "./template.dto";
 
 // Template Schemas
-export const whatsappTemplateSchema = Joi.object<IWhatsappTemplate>({
-    namespace: Joi.string().required(),
-});
-
 export const whatsappTemplateCreateSchema = Joi.object<IWhatsappTemplateCreate>({
-    namespace: Joi.string().required(),
+    namespace: Joi.string()
+        .required()
+        .pattern(new RegExp(/[^a-zA-Z]+$/)),
     message: Joi.string().required(),
 });
 
