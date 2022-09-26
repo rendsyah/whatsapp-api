@@ -10,8 +10,8 @@ import {
     IRequestGetAllTemplate,
     IRequestUpdateTemplate,
     IResponseTemplateService,
-} from "./template.dto";
-import { IRequestDataSuccess } from "../../config/lib/interface";
+} from "./whatsappTemplate.dto";
+import { IRequestDataSuccess } from "../../config/lib/base.dto";
 
 // Commons
 import {
@@ -21,7 +21,7 @@ import {
     whatsappGetAllTemplateService,
     whatsappGetTemplateService,
     whatsappUpdateTemplateService,
-} from "./template.service";
+} from "./whatsappTemplate.service";
 import { responseApiSuccess } from "../../config/lib/baseFunctions";
 
 // Template Controllers
@@ -73,7 +73,7 @@ export const whatsappGetAllTemplateController = async (req: Request, res: Respon
     }
 };
 
-export const whatsappTemplateUpdateController = async (req: Request, res: Response, next: NextFunction) => {
+export const whatsappUpdateTemplateController = async (req: Request, res: Response, next: NextFunction) => {
     try {
         const params: IRequestUpdateTemplate = req.body;
         const responseService: IResponseTemplateService = await whatsappUpdateTemplateService(params);

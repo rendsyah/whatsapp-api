@@ -4,7 +4,7 @@ import multer from "multer";
 import appRootPath from "app-root-path";
 
 // Interfaces
-import { IRequestDataError } from "../config/lib/interface";
+import { IRequestDataError } from "../config/lib/base.dto";
 
 // Commons
 import { validateRequestMoment, randomCharacters, responseApiError } from "../config/lib/baseFunctions";

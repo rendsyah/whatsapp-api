@@ -9,14 +9,15 @@ import expressWinston from "express-winston";
 dotenv.config();
 
 // Interfaces
-import { IRequestDataError } from "./config/lib/interface";
+import { IRequestDataError } from "./config/lib/base.dto";
 
 // Commons
 import { configQueues } from "./config/queues";
 import { whatsappConnectQueue, whatsappMessageQueue } from "./modules/whatsapp/whatsapp.process";
 import { mongoConnection } from "./databases";
 import { whatsappService } from "./modules/whatsapp/whatsapp.service";
-import { loggerDev, loggerInfo, loggerError } from "./config/logs/logger";
+import { loggerDev } from "./config/logs/logger.development";
+import { loggerInfo, loggerError } from "./config/logs/logger.production";
 import { router } from "./routes";
 import { responseApiError } from "./config/lib/baseFunctions";
 

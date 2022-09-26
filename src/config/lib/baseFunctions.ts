@@ -3,51 +3,51 @@ import moment from "moment";
 import crypto from "crypto";
 
 // Interfaces
-import { IRequestDataError, IRequestDataSuccess, ITypeBuffer, ItypeChar, ItypeMoment, ITypeParams } from "./interface";
+import { IRequestDataError, IRequestDataSuccess, ITypeBuffer, ItypeChar, ItypeMoment, ITypeParams } from "./base.dto";
 
 // Commons
 import logger from "../logs";
-import models from "../../databases/models";
 
 export const validateParams = (request: string, regExp: RegExp): string => {
     return request.replace(regExp, "");
 };
 
-export const validateRequestParams = (request: unknown, type: ITypeParams): string => {
-    if (request && (typeof request === "string" || typeof request === "number")) {
-        const requestString = request.toString();
-        switch (type) {
-            case "char":
-                return validateParams(requestString, /[^a-z\d\s]+/gi);
-            case "charSpace":
-                return validateParams(requestString, /[^a-zA-Z]/g);
-            case "num":
-                return validateParams(requestString, /[^0-9]+/g);
-            case "numChar":
-                return validateParams(requestString, /[^a-zA-Z0-9]/g);
-            case "numCharSpace":
-                return validateParams(requestString, /[^\w\s]/gi);
-            case "any":
-                return requestString;
-        }
+export const validateRequestParams = (request: string | number, type: ITypeParams): string => {
+    if (!request) return "";
+
+    const requestString = request.toString();
+
+    switch (type) {
+        case "char":
+            return validateParams(requestString, /[^a-z\d\s]+/gi);
+
+        case "charSpace":
+            return validateParams(requestString, /[^a-zA-Z]/g);
+
+        case "num":
+            return validateParams(requestString, /[^0-9]+/g);
+
+        case "numChar":
+            return validateParams(requestString, /[^a-zA-Z0-9]/g);
+
+        case "numCharSpace":
+            return validateParams(requestString, /[^\w\s]/gi);
+
+        case "any":
+            return requestString;
     }
-    return "";
 };
 
-export const validateRequestBuffer = (request: unknown, type: ITypeBuffer): string => {
-    if (request && typeof request === "string") {
-        switch (type) {
-            case "encode":
-                return Buffer.from(request).toString("base64");
-            case "decode":
-                return Buffer.from(request, "base64").toString("ascii");
+export const validateRequestBuffer = (request: string, type: ITypeBuffer): string => {
+    if (!request) return "";
 
-            default:
-                return "";
-        }
+    switch (type) {
+        case "encode":
+            return Buffer.from(request).toString("base64");
+
+        case "decode":
+            return Buffer.from(request, "base64").toString("ascii");
     }
-
-    return "";
 };
 
 export const validateRequestHp = (request: string): string => {
@@ -55,21 +55,25 @@ export const validateRequestHp = (request: string): string => {
 
     const checkNumberHp = request.substring(0, 2);
 
-    if (checkNumberHp === "62") return request + "@c.us";
+    if (checkNumberHp === "62") {
+        return request + "@c.us";
+    }
+
     return request.replace(checkNumberHp, "628") + "@c.us";
 };
 
 export const validateRequestMoment = (request: Date, type: ItypeMoment): string => {
+    if (!moment(request).isValid()) return "";
+
     switch (type) {
         case "date":
             return moment(request).format("YYYY-MM-DD");
+
         case "datetime":
             return moment(request).format("YYYY-MM-DD HH:mm:ss");
+
         case "datetime2":
             return moment(request).format("YYYYMMDDHHmmss");
-
-        default:
-            return "";
     }
 };
 
@@ -79,27 +83,13 @@ export const validateRequestEmoji = (request: string): string => {
     return request.replace(/\p{Extended_Pictographic}/gu, (m: any, idx: any) => `[e-${m.codePointAt(0).toString(16)}]`);
 };
 
-export const validateRequestVariable = async (namespace: string, variable: string[]): Promise<string> => {
-    try {
-        let message = "";
-        const templateMessage = await models.Templates.findOne({ namespace, status: 1 });
-
-        if (templateMessage) {
-            for (let index = 0; index < variable.length; index++) {
-                message = templateMessage.message.replace(`{{${index + 1}}}`, variable[index]);
-            }
-        }
-        return message;
-    } catch (error) {
-        throw error;
-    }
-};
-
 export const validateGenerateError = (error: unknown): void => {
     logger.error(error);
 };
 
 export const randomCharacters = (request: number, type: ItypeChar): string => {
+    if (!request) return "";
+
     let characters = "";
     let charactersResult = "";
 
@@ -107,13 +97,13 @@ export const randomCharacters = (request: number, type: ItypeChar): string => {
         case "alpha":
             characters = "qwertyuiopasdfghjklzxcvbnm";
             break;
+
         case "numeric":
             characters = "1234567890";
             break;
+
         case "alphanumeric":
             characters = "1234567890qwertyuiopasdfghjklzxcvbnm";
-            break;
-        default:
             break;
     }
 
@@ -121,17 +111,18 @@ export const randomCharacters = (request: number, type: ItypeChar): string => {
         const random = Math.floor(Math.random() * characters.length);
         charactersResult += characters[random];
     }
+
     return charactersResult.toUpperCase();
 };
 
 export const randomHash = async (request: crypto.BinaryLike, encode: crypto.BinaryToTextEncoding): Promise<string> => {
-    try {
-        if (!request) return "";
+    if (!request) return "";
 
+    try {
         const randomStr = Math.random().toString(36).substring(7);
         const hash = crypto.createHash("sha256").update(request).digest(encode);
-
         const resultHash = `${hash}${randomStr}`;
+
         return resultHash;
     } catch (error) {
         throw error;
@@ -144,6 +135,7 @@ export const randomInt = (request: number[]): number => {
 
 export const responseApiError = (request: IRequestDataError): unknown => {
     const { code, status, params, detail } = request;
+
     return {
         apiVersion: "1.0",
         error: {
@@ -157,6 +149,7 @@ export const responseApiError = (request: IRequestDataError): unknown => {
 
 export const responseApiSuccess = (request: IRequestDataSuccess): unknown => {
     const { code, status, data } = request;
+
     return {
         apiVersion: "1.0",
         data: {

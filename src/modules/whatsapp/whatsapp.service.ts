@@ -9,8 +9,8 @@ import { IRequestMediaType, IRequestReplyMessageService, IResponseWhatsappServic
 
 // Commons
 import { whatsappAuth } from "../../middlewares";
-import { loggerDev } from "../../config/logs/logger";
-import { BadRequestException, NotFoundException } from "../../config/lib/baseClasses";
+import { loggerDev } from "../../config/logs/logger.development";
+import { BadRequestException } from "../../config/lib/baseClasses";
 import {
     validateRequestParams,
     validateRequestHp,
@@ -108,24 +108,16 @@ export const whatsappReplyService = async (params: IRequestReplyMessageService):
 
         switch (type) {
             case "text/individual":
-                if (body.link || body.link === "") {
-                    throw new BadRequestException("link", "link not allowed for type text/individual");
-                }
-
                 responseData = await whatsappClient.sendMessage(validateRequestHp(to), body.message);
-
                 return responseData?.id ?? null;
 
             case "text-image/individual":
-                if (!body.link) {
-                    throw new BadRequestException("link", "link not allowed to be empty");
+                if (body.link) {
+                    responseData = await whatsappClient.sendMessage(validateRequestHp(to), body.message, {
+                        media: await MessageMedia.fromUrl(body.link, { unsafeMime: true }),
+                    });
+                    return responseData?.id ?? null;
                 }
-
-                responseData = await whatsappClient.sendMessage(validateRequestHp(to), body.message, {
-                    media: await MessageMedia.fromUrl(body.link, { unsafeMime: true }),
-                });
-
-                return responseData?.id ?? null;
 
             case "template/individual":
                 if (components) {
@@ -134,7 +126,7 @@ export const whatsappReplyService = async (params: IRequestReplyMessageService):
                 }
 
             default:
-                throw new NotFoundException("type", "type not found");
+                throw new BadRequestException("type", "type is not exists");
         }
     } catch (error) {
         throw error;
@@ -154,10 +146,12 @@ export const whatsappMessageService = async (params: IRequestReplyMessageService
         };
 
         const processQueue = whatsappMessageQueue();
-
         const responseQueue = await processQueue.add("Message Process Queue", requestReplyService);
-
         const responseData = await responseQueue.finished();
+
+        if (!responseData) {
+            throw new Error("sending message failed, try again");
+        }
 
         return { data: responseData };
     } catch (error) {

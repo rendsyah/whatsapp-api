@@ -3,7 +3,7 @@ import { Request, Response, NextFunction } from "express";
 import { ObjectSchema, ValidationError } from "joi";
 
 // Interfaces
-import { IRequestDataError } from "../config/lib/interface";
+import { IRequestDataError } from "../config/lib/base.dto";
 
 // Commons
 import { validateRequestParams, responseApiError } from "../config/lib/baseFunctions";
@@ -12,13 +12,11 @@ import { validateRequestParams, responseApiError } from "../config/lib/baseFunct
 export const whatsappValidation = (schema: ObjectSchema) => {
     return async (req: Request, res: Response, next: NextFunction) => {
         try {
-            let validated;
-            if (Object.keys(req.query).length > 0) {
-                validated = await schema.validateAsync(req.query, { abortEarly: false });
-            } else {
-                validated = await schema.validateAsync(req.body, { abortEarly: false });
-            }
+            const request = Object.keys(req.query).length > 0 ? req.query : req.body;
+            const validated = await schema.validateAsync(request, { abortEarly: false });
+
             req.body = validated;
+
             next();
         } catch (error) {
             if (error instanceof ValidationError) {

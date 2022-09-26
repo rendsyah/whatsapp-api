@@ -2,7 +2,7 @@
 import { connect, connection } from "mongoose";
 
 // Commons
-import { loggerDev } from "../config/logs/logger";
+import { loggerDev } from "../config/logs/logger.development";
 
 // Database Environments
 const DATABASE_MONGO_HOST = process.env.DATABASE_MONGO_HOST as string;

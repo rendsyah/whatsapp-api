@@ -5,13 +5,13 @@ import express from "express";
 import { whatsappUpload, whatsappValidation } from "../middlewares";
 import { whatsappMessageSchema } from "../modules/whatsapp/whatsapp.pipe";
 import {
-    whatsappTemplateCreateSchema,
-    whatsappTemplateDeleteSchema,
-    whatsappTemplateDownloadSchema,
-    whatsappTemplateGetAllSchema,
-    whatsappTemplateGetSchema,
-    whatsappTemplateUpdateSchema,
-} from "../modules/whatsappTemplate/template.pipe";
+    whatsappCreateTemplateSchema,
+    whatsappDeleteTemplateSchema,
+    whatsappDownloadTemplateSchema,
+    whatsappGetAllTemplateSchema,
+    whatsappGetTemplateSchema,
+    whatsappUpdateTemplateSchema,
+} from "../modules/whatsappTemplate/whatsappTemplate.pipe";
 
 // Controllers
 import { whatsappController, whatsappMessageController } from "../modules/whatsapp/whatsapp.controller";
@@ -21,8 +21,8 @@ import {
     whatsappDownloadTemplateController,
     whatsappGetAllTemplateController,
     whatsappGetTemplateController,
-    whatsappTemplateUpdateController,
-} from "../modules/whatsappTemplate/template.controller";
+    whatsappUpdateTemplateController,
+} from "../modules/whatsappTemplate/whatsappTemplate.controller";
 
 // Routes
 export const router = express.Router();
@@ -32,9 +32,9 @@ router.get("/whatsapp", whatsappController);
 router.post("/whatsapp/message", whatsappValidation(whatsappMessageSchema), whatsappMessageController);
 
 // Whatsapp Template Routes
-router.post("/whatsapp/template/create", whatsappValidation(whatsappTemplateCreateSchema), whatsappCreateTemplateController);
-router.get("/whatsapp/template", whatsappValidation(whatsappTemplateGetSchema), whatsappGetTemplateController);
-router.get("/whatsapp/template/all", whatsappValidation(whatsappTemplateGetAllSchema), whatsappGetAllTemplateController);
-router.patch("/whatsapp/template", whatsappValidation(whatsappTemplateUpdateSchema), whatsappTemplateUpdateController);
-router.delete("/whatsapp/template", whatsappValidation(whatsappTemplateDeleteSchema), whatsappDeleteTemplateController);
-router.get("/whatsapp/template/download", whatsappValidation(whatsappTemplateDownloadSchema), whatsappDownloadTemplateController);
+router.post("/whatsapp/template/create", whatsappValidation(whatsappCreateTemplateSchema), whatsappCreateTemplateController);
+router.get("/whatsapp/template", whatsappValidation(whatsappGetTemplateSchema), whatsappGetTemplateController);
+router.get("/whatsapp/template/all", whatsappValidation(whatsappGetAllTemplateSchema), whatsappGetAllTemplateController);
+router.patch("/whatsapp/template/update", whatsappValidation(whatsappUpdateTemplateSchema), whatsappUpdateTemplateController);
+router.delete("/whatsapp/template/delete", whatsappValidation(whatsappDeleteTemplateSchema), whatsappDeleteTemplateController);
+router.get("/whatsapp/template/download", whatsappValidation(whatsappDownloadTemplateSchema), whatsappDownloadTemplateController);
