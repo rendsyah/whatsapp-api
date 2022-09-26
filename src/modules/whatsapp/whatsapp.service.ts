@@ -5,7 +5,7 @@ import fs from "fs";
 import appRootPath from "app-root-path";
 
 // Interfaces
-import { IRequestMediaType, IRequestReplyMessageService, IResponseService } from "./whatsapp.dto";
+import { IRequestMediaType, IRequestReplyMessageService, IResponseWhatsappService } from "./whatsapp.dto";
 
 // Commons
 import { whatsappAuth } from "../../middlewares";
@@ -142,7 +142,7 @@ export const whatsappReplyService = async (params: IRequestReplyMessageService):
 };
 
 // Whatsapp Message Services
-export const whatsappMessageService = async (params: IRequestReplyMessageService): Promise<IResponseService> => {
+export const whatsappMessageService = async (params: IRequestReplyMessageService): Promise<IResponseWhatsappService> => {
     try {
         const { to, type, body, components } = params;
 

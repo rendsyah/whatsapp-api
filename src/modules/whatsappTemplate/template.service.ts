@@ -6,34 +6,34 @@ import fs from "fs";
 
 // Interfaces
 import {
-    IWhatsappTemplateCreate,
-    IWhatsappTemplateDelete,
-    IWhatsappTemplateDownload,
-    IWhatsappTemplateGet,
-    IWhatsappTemplateGetAll,
-    IWhatsappTemplateUpdate,
+    IRequestCreateTemplate,
+    IRequestDeleteTemplate,
+    IRequestDownloadTemplate,
+    IRequestGetTemplate,
+    IRequestGetAllTemplate,
+    IRequestUpdateTemplate,
+    IResponseTemplateService,
 } from "./template.dto";
-import { IResponseService } from "../whatsapp/whatsapp.dto";
 
 // Commons
 import { BadRequestException, NotFoundException } from "../../config/lib/baseClasses";
 import models from "../../databases/models";
 
 // Whatsapp Template Create Service
-export const whatsappTemplateCreateService = async (params: IWhatsappTemplateCreate): Promise<IResponseService> => {
+export const whatsappCreateTemplateService = async (params: IRequestCreateTemplate): Promise<IResponseTemplateService> => {
     try {
-        const { namespace, message } = params;
+        const { namespace, message, channelId } = params;
 
-        const dataTemplate = await models.Templates.findOne({ namespace });
+        const getTemplate = await models.Templates.findOne({ namespace: namespace });
 
-        if (dataTemplate) {
+        if (getTemplate) {
             throw new BadRequestException("namespace", "data already exist");
         }
 
         await models.Templates.create({
             namespace,
             message,
-            channel: { _id: "63182cf0768290a9bc0fbf7c" },
+            channelId,
         });
 
         return { data: {} };
@@ -43,61 +43,69 @@ export const whatsappTemplateCreateService = async (params: IWhatsappTemplateCre
 };
 
 // Whatsapp Template Get Service
-export const whatsappTemplateGetService = async (params: IWhatsappTemplateGet): Promise<IResponseService> => {
+export const whatsappGetTemplateService = async (params: IRequestGetTemplate): Promise<IResponseTemplateService> => {
     try {
         const { id } = params;
 
-        const checkValidId = mongoose.isValidObjectId(id);
+        const checkingId = mongoose.isValidObjectId(id);
 
-        if (!checkValidId) {
+        if (!checkingId) {
+            throw new BadRequestException("id", "data invalid");
+        }
+
+        const getTemplate = await models.Templates.findOne({ _id: id }, "namespace message channelId");
+
+        if (!getTemplate) {
             throw new NotFoundException("id", "data not found");
         }
 
-        const dataTemplate = await models.Templates.findOne({ _id: checkValidId });
-
-        return { data: dataTemplate };
+        return { data: getTemplate };
     } catch (error) {
         throw error;
     }
 };
 
 // Whatsapp Template Get All Service
-export const whatsappTemplateGetAllService = async (params: IWhatsappTemplateGetAll): Promise<IResponseService> => {
+export const whatsappGetAllTemplateService = async (params: IRequestGetAllTemplate): Promise<IResponseTemplateService> => {
     try {
         const { id } = params;
 
-        const checkValidId = mongoose.isValidObjectId(id);
+        const checkingId = mongoose.isValidObjectId(id);
 
-        if (!checkValidId) {
+        if (!checkingId) {
+            throw new BadRequestException("id", "data invalid");
+        }
+
+        const getTemplate = await models.Templates.find({ _id: id }, "namespace message channelId");
+
+        if (!getTemplate) {
             throw new NotFoundException("id", "data not found");
         }
 
-        const dataTemplate = await models.Templates.find({ _id: checkValidId });
-
-        return { data: dataTemplate };
+        return { data: getTemplate };
     } catch (error) {
         throw error;
     }
 };
 
 // Whatsapp Template Update Service
-export const whatsappTemplateUpdateService = async (params: IWhatsappTemplateUpdate): Promise<IResponseService> => {
+export const whatsappUpdateTemplateService = async (params: IRequestUpdateTemplate): Promise<IResponseTemplateService> => {
     try {
         const { id, namespace, message } = params;
 
-        const checkValidId = mongoose.isValidObjectId(id);
+        const checkingId = mongoose.isValidObjectId(id);
 
-        if (!checkValidId) {
-            throw new NotFoundException("id", "data not found");
+        if (!checkingId) {
+            throw new BadRequestException("id", "data invalid");
         }
 
-        const dataTemplate = await models.Templates.findOne({ namespace });
+        const getTemplate = await models.Templates.findOne({ namespace });
 
-        if (dataTemplate) {
+        if (getTemplate) {
             throw new BadRequestException("namespace", "data already exist");
         }
 
-        await models.Templates.updateOne({ _id: checkValidId }, { $set: { namespace, message } });
+        await models.Templates.updateOne({ _id: id }, { $set: { namespace, message } });
 
         return { data: {} };
     } catch (error) {
@@ -106,17 +114,21 @@ export const whatsappTemplateUpdateService = async (params: IWhatsappTemplateUpd
 };
 
 // Whatsapp Template Delete Service
-export const whatsappTemplateDeleteService = async (params: IWhatsappTemplateDelete): Promise<IResponseService> => {
+export const whatsappDeleteTemplateService = async (params: IRequestDeleteTemplate): Promise<IResponseTemplateService> => {
     try {
         const { id } = params;
 
-        const checkValidId = mongoose.isValidObjectId(id);
+        const checkingId = mongoose.isValidObjectId(id);
 
-        if (!checkValidId) {
-            throw new NotFoundException("id", "data not found");
+        if (!checkingId) {
+            throw new BadRequestException("id", "data invalid");
         }
 
-        await models.Templates.deleteOne({ _id: checkValidId });
+        const deleteTemplate = await models.Templates.findByIdAndDelete({ _id: id });
+
+        if (!deleteTemplate) {
+            throw new NotFoundException("id", "data not found");
+        }
 
         return { data: {} };
     } catch (error) {
@@ -125,7 +137,7 @@ export const whatsappTemplateDeleteService = async (params: IWhatsappTemplateDel
 };
 
 // Whatsapp Template Download Service
-export const whatsappTemplateDownloadService = async (params: IWhatsappTemplateDownload): Promise<IResponseService> => {
+export const whatsappDownloadTemplateService = async (params: IRequestDownloadTemplate): Promise<IResponseTemplateService> => {
     const { extension } = params;
 
     const templatePath = path.resolve(`${appRoot}/../public/template/Template_v1.${extension}`);

@@ -16,11 +16,11 @@ import {
 // Controllers
 import { whatsappController, whatsappMessageController } from "../modules/whatsapp/whatsapp.controller";
 import {
-    whatsappTemplateCreateController,
-    whatsappTemplateDeleteController,
-    whatsappTemplateDownloadController,
-    whatsappTemplateGetAllController,
-    whatsappTemplateGetController,
+    whatsappCreateTemplateController,
+    whatsappDeleteTemplateController,
+    whatsappDownloadTemplateController,
+    whatsappGetAllTemplateController,
+    whatsappGetTemplateController,
     whatsappTemplateUpdateController,
 } from "../modules/whatsappTemplate/template.controller";
 
@@ -32,9 +32,9 @@ router.get("/whatsapp", whatsappController);
 router.post("/whatsapp/message", whatsappValidation(whatsappMessageSchema), whatsappMessageController);
 
 // Whatsapp Template Routes
-router.post("/whatsapp/template/create", whatsappValidation(whatsappTemplateCreateSchema), whatsappTemplateCreateController);
-router.get("/whatsapp/template/:id", whatsappValidation(whatsappTemplateGetSchema), whatsappTemplateGetController);
-router.get("/whatsapp/template/all", whatsappValidation(whatsappTemplateGetAllSchema), whatsappTemplateGetAllController);
-router.patch("/whatsapp/template/:id", whatsappValidation(whatsappTemplateUpdateSchema), whatsappTemplateUpdateController);
-router.delete("/whatsapp/template/:id", whatsappValidation(whatsappTemplateDeleteSchema), whatsappTemplateDeleteController);
-router.get("/whatsapp/template/download", whatsappValidation(whatsappTemplateDownloadSchema), whatsappTemplateDownloadController);
+router.post("/whatsapp/template/create", whatsappValidation(whatsappTemplateCreateSchema), whatsappCreateTemplateController);
+router.get("/whatsapp/template", whatsappValidation(whatsappTemplateGetSchema), whatsappGetTemplateController);
+router.get("/whatsapp/template/all", whatsappValidation(whatsappTemplateGetAllSchema), whatsappGetAllTemplateController);
+router.patch("/whatsapp/template", whatsappValidation(whatsappTemplateUpdateSchema), whatsappTemplateUpdateController);
+router.delete("/whatsapp/template", whatsappValidation(whatsappTemplateDeleteSchema), whatsappDeleteTemplateController);
+router.get("/whatsapp/template/download", whatsappValidation(whatsappTemplateDownloadSchema), whatsappDownloadTemplateController);

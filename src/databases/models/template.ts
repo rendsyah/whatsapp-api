@@ -6,7 +6,12 @@ interface ITemplates extends Document {
     namespace: string;
     message: string;
     status: number;
-    channel: any;
+    channelId: [
+        {
+            type: string;
+            ref: string;
+        },
+    ];
 }
 
 // Template Schema
@@ -25,7 +30,7 @@ const templatesSchema = new Schema<ITemplates>(
             type: Number,
             default: 1,
         },
-        channel: [
+        channelId: [
             {
                 type: Types.ObjectId,
                 ref: "Channels",

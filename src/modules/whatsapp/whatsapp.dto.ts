@@ -28,6 +28,6 @@ export enum IRequestMediaType {
     application = "docs/",
 }
 
-export interface IResponseService {
+export interface IResponseWhatsappService {
     data: unknown;
 }

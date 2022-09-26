@@ -2,7 +2,7 @@
 import { Request, Response, NextFunction } from "express";
 
 // Interfaces
-import { IRequestReplyMessageService, IResponseService } from "./whatsapp.dto";
+import { IRequestReplyMessageService, IResponseWhatsappService } from "./whatsapp.dto";
 import { IRequestDataSuccess } from "../../config/lib/interface";
 
 // Services
@@ -28,7 +28,7 @@ export const whatsappController = async (req: Request, res: Response, next: Next
 export const whatsappMessageController = async (req: Request, res: Response, next: NextFunction) => {
     try {
         const params: IRequestReplyMessageService = req.body;
-        const responseService: IResponseService = await whatsappMessageService(params);
+        const responseService: IResponseWhatsappService = await whatsappMessageService(params);
         const requestResponseData: IRequestDataSuccess = {
             code: 200,
             status: "success",

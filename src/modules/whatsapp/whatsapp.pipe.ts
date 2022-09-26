@@ -18,9 +18,25 @@ export const whatsappMessageSchema = Joi.object<IRequestReplyMessageService>({
     body: Joi.object({
         message: Joi.string().required().label("message"),
         link: Joi.string()
-            .uri()
+            .uri({ scheme: ["http", "https"] })
             .allow(null && "")
             .label("link"),
     }),
-    components: Joi.array().allow(null),
+    components: Joi.array()
+        .items(
+            Joi.object({
+                type: Joi.string().required(),
+                parameters: Joi.array().items(
+                    Joi.object({
+                        type: Joi.string().required(),
+                        text: Joi.string().required(),
+                        link: Joi.string()
+                            .uri({ scheme: ["http", "https"] })
+                            .allow(null || "")
+                            .label("link"),
+                    }),
+                ),
+            }),
+        )
+        .allow(null),
 });

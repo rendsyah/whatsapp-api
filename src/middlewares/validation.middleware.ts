@@ -12,7 +12,12 @@ import { validateRequestParams, responseApiError } from "../config/lib/baseFunct
 export const whatsappValidation = (schema: ObjectSchema) => {
     return async (req: Request, res: Response, next: NextFunction) => {
         try {
-            const validated = await schema.validateAsync(req.body, { abortEarly: false });
+            let validated;
+            if (Object.keys(req.query).length > 0) {
+                validated = await schema.validateAsync(req.query, { abortEarly: false });
+            } else {
+                validated = await schema.validateAsync(req.body, { abortEarly: false });
+            }
             req.body = validated;
             next();
         } catch (error) {

@@ -2,52 +2,53 @@
 import { Request, Response, NextFunction } from "express";
 
 // Interfaces
-import { IResponseService } from "../whatsapp/whatsapp.dto";
 import {
-    IWhatsappTemplateCreate,
-    IWhatsappTemplateDelete,
-    IWhatsappTemplateDownload,
-    IWhatsappTemplateGet,
-    IWhatsappTemplateGetAll,
-    IWhatsappTemplateUpdate,
+    IRequestCreateTemplate,
+    IRequestDeleteTemplate,
+    IRequestDownloadTemplate,
+    IRequestGetTemplate,
+    IRequestGetAllTemplate,
+    IRequestUpdateTemplate,
+    IResponseTemplateService,
 } from "./template.dto";
 import { IRequestDataSuccess } from "../../config/lib/interface";
 
 // Commons
 import {
-    whatsappTemplateCreateService,
-    whatsappTemplateDeleteService,
-    whatsappTemplateDownloadService,
-    whatsappTemplateGetAllService,
-    whatsappTemplateGetService,
-    whatsappTemplateUpdateService,
+    whatsappCreateTemplateService,
+    whatsappDeleteTemplateService,
+    whatsappDownloadTemplateService,
+    whatsappGetAllTemplateService,
+    whatsappGetTemplateService,
+    whatsappUpdateTemplateService,
 } from "./template.service";
 import { responseApiSuccess } from "../../config/lib/baseFunctions";
 
 // Template Controllers
-export const whatsappTemplateCreateController = async (req: Request, res: Response, next: NextFunction) => {
+export const whatsappCreateTemplateController = async (req: Request, res: Response, next: NextFunction) => {
     try {
-        const body: IWhatsappTemplateCreate = req.body;
-        const responseService: IResponseService = await whatsappTemplateCreateService(body);
+        const params: IRequestCreateTemplate = req.body;
+        const responseService: IResponseTemplateService = await whatsappCreateTemplateService(params);
         const requestResponseData: IRequestDataSuccess = {
             code: 200,
             status: "success",
             data: responseService,
         };
+
         return res.status(200).send(responseApiSuccess(requestResponseData));
     } catch (error) {
         next(error);
     }
 };
 
-export const whatsappTemplateGetController = async (req: Request, res: Response, next: NextFunction) => {
+export const whatsappGetTemplateController = async (req: Request, res: Response, next: NextFunction) => {
     try {
-        const body: IWhatsappTemplateGet = req.body;
-        const responseTemplateGetService: IResponseService = await whatsappTemplateGetService(body);
+        const params: IRequestGetTemplate = req.body;
+        const responseService: IResponseTemplateService = await whatsappGetTemplateService(params);
         const requestResponseData: IRequestDataSuccess = {
             code: 200,
             status: "success",
-            data: responseTemplateGetService,
+            data: responseService,
         };
 
         return res.status(200).send(responseApiSuccess(requestResponseData));
@@ -56,14 +57,14 @@ export const whatsappTemplateGetController = async (req: Request, res: Response,
     }
 };
 
-export const whatsappTemplateGetAllController = async (req: Request, res: Response, next: NextFunction) => {
+export const whatsappGetAllTemplateController = async (req: Request, res: Response, next: NextFunction) => {
     try {
-        const body: IWhatsappTemplateGetAll = req.body;
-        const responseTemplateGetAllService: IResponseService = await whatsappTemplateGetAllService(body);
+        const params: IRequestGetAllTemplate = req.body;
+        const responseService: IResponseTemplateService = await whatsappGetAllTemplateService(params);
         const requestResponseData: IRequestDataSuccess = {
             code: 200,
             status: "success",
-            data: responseTemplateGetAllService,
+            data: responseService,
         };
 
         return res.status(200).send(responseApiSuccess(requestResponseData));
@@ -74,12 +75,12 @@ export const whatsappTemplateGetAllController = async (req: Request, res: Respon
 
 export const whatsappTemplateUpdateController = async (req: Request, res: Response, next: NextFunction) => {
     try {
-        const body: IWhatsappTemplateUpdate = req.body;
-        const responseTemplateUpdateService: IResponseService = await whatsappTemplateUpdateService(body);
+        const params: IRequestUpdateTemplate = req.body;
+        const responseService: IResponseTemplateService = await whatsappUpdateTemplateService(params);
         const requestResponseData: IRequestDataSuccess = {
             code: 200,
             status: "success",
-            data: responseTemplateUpdateService,
+            data: responseService,
         };
 
         return res.status(200).send(responseApiSuccess(requestResponseData));
@@ -88,14 +89,14 @@ export const whatsappTemplateUpdateController = async (req: Request, res: Respon
     }
 };
 
-export const whatsappTemplateDeleteController = async (req: Request, res: Response, next: NextFunction) => {
+export const whatsappDeleteTemplateController = async (req: Request, res: Response, next: NextFunction) => {
     try {
-        const body: IWhatsappTemplateDelete = req.body;
-        const responseTemplateDeleteService: IResponseService = await whatsappTemplateDeleteService(body);
+        const params: IRequestDeleteTemplate = req.body;
+        const responseService: IResponseTemplateService = await whatsappDeleteTemplateService(params);
         const requestResponseData: IRequestDataSuccess = {
             code: 200,
             status: "success",
-            data: responseTemplateDeleteService,
+            data: responseService,
         };
 
         return res.status(200).send(responseApiSuccess(requestResponseData));
@@ -104,11 +105,11 @@ export const whatsappTemplateDeleteController = async (req: Request, res: Respon
     }
 };
 
-export const whatsappTemplateDownloadController = async (req: Request, res: Response, next: NextFunction) => {
+export const whatsappDownloadTemplateController = async (req: Request, res: Response, next: NextFunction) => {
     try {
-        const body: IWhatsappTemplateDownload = req.body;
-        const responseTemplateDownloadService: IResponseService = await whatsappTemplateDownloadService(body);
-        const requestResponseData = responseTemplateDownloadService.data as string;
+        const params: IRequestDownloadTemplate = req.body;
+        const responseService: IResponseTemplateService = await whatsappDownloadTemplateService(params);
+        const requestResponseData = responseService.data as string;
 
         return res.status(200).download(requestResponseData);
     } catch (error) {

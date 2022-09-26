@@ -1,25 +1,30 @@
 // Interfaces Template
-export interface IWhatsappTemplateCreate {
+export interface IRequestCreateTemplate {
     namespace: string;
     message: string;
+    channelId: string;
 }
 
-export interface IWhatsappTemplateGet {
+export interface IRequestGetTemplate {
     id: string;
 }
 
-export interface IWhatsappTemplateGetAll {
+export interface IRequestGetAllTemplate {
     id: string;
 }
 
-export interface IWhatsappTemplateUpdate extends IWhatsappTemplateCreate {
+export interface IRequestUpdateTemplate extends IRequestCreateTemplate {
     id: string;
 }
 
-export interface IWhatsappTemplateDelete {
+export interface IRequestDeleteTemplate {
     id: string;
 }
 
-export interface IWhatsappTemplateDownload {
+export interface IRequestDownloadTemplate {
     extension: string;
+}
+
+export interface IResponseTemplateService {
+    data: unknown;
 }
