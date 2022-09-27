@@ -19,6 +19,7 @@ import { whatsappService } from "./modules/whatsapp/whatsapp.service";
 import { loggerDev } from "./config/logs/logger.development";
 import { loggerInfo, loggerError } from "./config/logs/logger.production";
 import { router } from "./routes";
+import { swaggerRouter } from "./config/openAPI";
 import { responseApiError } from "./config/lib/baseFunctions";
 
 // Service Environments
@@ -51,6 +52,9 @@ whatsappService();
 // Info Logger For Production
 app.use(expressWinston.logger(loggerInfo));
 
+// Grouping Swagger OpenAPI
+app.use(swaggerRouter);
+
 // Grouping Queues
 app.use("/admin/queues", queues.getRouter());
 
@@ -66,7 +70,7 @@ app.use((error: any, req: Request, res: Response, next: NextFunction) => {
         code: error.code || 500,
         status: error.status || "Internal Server Error",
         params: error.params || "",
-        detail: error.detail || error.message,
+        detail: error.detail || error.message || "service error, try again",
     };
 
     return res.status(500).send(responseApiError(requestResponseData));

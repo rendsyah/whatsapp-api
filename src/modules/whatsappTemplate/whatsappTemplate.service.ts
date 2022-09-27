@@ -24,9 +24,9 @@ export const whatsappCreateTemplateService = async (params: IRequestCreateTempla
     try {
         const { namespace, message, channelId } = params;
 
-        const getTemplate = await models.Templates.findOne({ namespace: namespace });
+        const responseData = await models.Templates.findOne({ namespace: namespace });
 
-        if (getTemplate) {
+        if (responseData) {
             throw new BadRequestException("namespace", "namespace already exist");
         }
 
@@ -53,13 +53,13 @@ export const whatsappGetTemplateService = async (params: IRequestGetTemplate): P
             throw new BadRequestException("id", "id invalid");
         }
 
-        const getTemplate = await models.Templates.findOne({ _id: id }, "namespace message channelId");
+        const responseData = await models.Templates.findOne({ _id: id }, "namespace message channelId");
 
-        if (!getTemplate) {
+        if (!responseData) {
             throw new NotFoundException("id", "id not found");
         }
 
-        return { data: getTemplate };
+        return { data: responseData };
     } catch (error) {
         throw error;
     }
@@ -76,13 +76,13 @@ export const whatsappGetAllTemplateService = async (params: IRequestGetAllTempla
             throw new BadRequestException("id", "id invalid");
         }
 
-        const getTemplate = await models.Templates.find({ _id: id }, "namespace message channelId");
+        const responseData = await models.Templates.find({ _id: id }, "namespace message channelId");
 
-        if (!getTemplate) {
+        if (!responseData) {
             throw new NotFoundException("id", "id not found");
         }
 
-        return { data: getTemplate };
+        return { data: responseData };
     } catch (error) {
         throw error;
     }
@@ -99,9 +99,9 @@ export const whatsappUpdateTemplateService = async (params: IRequestUpdateTempla
             throw new BadRequestException("id", "id invalid");
         }
 
-        const getTemplate = await models.Templates.findOne({ namespace });
+        const responseData = await models.Templates.findOne({ namespace });
 
-        if (getTemplate) {
+        if (responseData) {
             throw new BadRequestException("namespace", "namespace already exist");
         }
 
@@ -124,9 +124,9 @@ export const whatsappDeleteTemplateService = async (params: IRequestDeleteTempla
             throw new BadRequestException("id", "id invalid");
         }
 
-        const deleteTemplate = await models.Templates.findByIdAndDelete({ _id: id });
+        const responseData = await models.Templates.findByIdAndDelete({ _id: id });
 
-        if (!deleteTemplate) {
+        if (!responseData) {
             throw new NotFoundException("id", "id not found");
         }
 
@@ -140,7 +140,7 @@ export const whatsappDeleteTemplateService = async (params: IRequestDeleteTempla
 export const whatsappDownloadTemplateService = async (params: IRequestDownloadTemplate): Promise<IResponseTemplateService> => {
     const { extension } = params;
 
-    const getTemplatePath = path.resolve(`${appRoot}/../public/template/Template_v1.${extension}`);
+    const responseData = path.resolve(`${appRoot}/../public/template/Template_v1.${extension}`);
 
-    return { data: getTemplatePath };
+    return { data: responseData };
 };

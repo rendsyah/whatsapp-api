@@ -1,0 +1,288 @@
+{
+    "openapi": "3.0.1",
+    "servers": [
+        {
+            "url": "{uri}://localhost:{port}/api/whatsapp",
+            "variables": {
+                "uri": {
+                    "description": "Whatsapp API for local is accessible via http",
+                    "default": "http"
+                },
+                "port": {
+                    "description": "Whatsapp API port for local development",
+                    "default": "8080"
+                }
+            }
+        },
+        {
+            "url": "{uri}://{domain}/api/whatsapp",
+            "variables": {
+                "uri": {
+                    "description": "Whatsapp API for beta is accessible via https",
+                    "default": "https"
+                },
+                "domain": {
+                    "description": "Whatsapp API domain for beta & production",
+                    "enum": ["beta", "production"],
+                    "default": "beta"
+                }
+            }
+        }
+    ],
+    "info": {
+        "title": "Whatsapp API - OpenAPI",
+        "version": "1.0.0",
+        "description": "Documentation of Whatsapp API version 1.0.0",
+        "termsOfService": "http://swagger.io/terms/",
+        "contact": {
+            "name": "Developer",
+            "email": "rndyfrdynsyh@gmail.com"
+        },
+        "license": {
+            "name": "Apache 2.0",
+            "url": "http://www.apache.org/licenses/LICENSE-2.0.html"
+        },
+        "externalDocs": {
+            "description": "find out more about Swagger",
+            "url": "http://swagger.io"
+        }
+    },
+    "tags": [
+        {
+            "name": "message",
+            "description": "Message API"
+        }
+    ],
+    "paths": {
+        "/message": {
+            "post": {
+                "tags": ["message"],
+                "operationId": "send-message",
+                "summary": "send message to whatsapp",
+                "requestBody": {
+                    "description": "Example Request Body",
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/Message"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Response Success",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Success"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Response Bad Request",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/BadRequest"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Response Internal Server Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/InternalServerError"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "components": {
+        "schemas": {
+            "Message": {
+                "required": ["to", "type"],
+                "properties": {
+                    "to": {
+                        "type": "string",
+                        "example": "6281318481635",
+                        "summary": "example for to"
+                    },
+                    "type": {
+                        "type": "string",
+                        "example": "text/individual",
+                        "summary": "example for type"
+                    },
+                    "body": {
+                        "type": "object",
+                        "required": ["message"],
+                        "properties": {
+                            "message": {
+                                "type": "string",
+                                "example": "hallo",
+                                "summary": "example for message"
+                            },
+                            "link": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            },
+            "Success": {
+                "properties": {
+                    "apiVersion": {
+                        "type": "string",
+                        "example": "1.0.0",
+                        "summary": "example for api version"
+                    },
+                    "data": {
+                        "type": "object",
+                        "properties": {
+                            "code": {
+                                "type": "integer",
+                                "example": 200,
+                                "summary": "example for code"
+                            },
+                            "status": {
+                                "type": "string",
+                                "example": "Bad Request",
+                                "summary": "example for status"
+                            },
+                            "data": {
+                                "type": "object",
+                                "properties": {
+                                    "fromMe": {
+                                        "type": "boolean",
+                                        "example": true,
+                                        "summary": "example for fromMe"
+                                    },
+                                    "remote": {
+                                        "type": "object",
+                                        "properties": {
+                                            "server": {
+                                                "type": "string",
+                                                "example": "c.us",
+                                                "summary": "example for server"
+                                            },
+                                            "user": {
+                                                "type": "string",
+                                                "example": "6281318481635",
+                                                "summary": "example for user"
+                                            },
+                                            "_serialized": {
+                                                "type": "string",
+                                                "example": "6281318481635@c.us",
+                                                "summary": "example for _serialized"
+                                            }
+                                        }
+                                    },
+                                    "id": {
+                                        "type": "string",
+                                        "example": "3EB00EB97856E0F4C961",
+                                        "summary": "example for id"
+                                    },
+                                    "_serialized": {
+                                        "type": "string",
+                                        "example": "true_6281318481635@c.us_3EB00EB97856E0F4C961",
+                                        "summary": "example for _serialized"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "BadRequest": {
+                "properties": {
+                    "apiVersion": {
+                        "type": "string",
+                        "example": "1.0.0",
+                        "summary": "example for api version"
+                    },
+                    "error": {
+                        "type": "object",
+                        "properties": {
+                            "code": {
+                                "type": "integer",
+                                "example": 400,
+                                "summary": "example for code"
+                            },
+                            "status": {
+                                "type": "string",
+                                "example": "Bad Request",
+                                "summary": "example for status"
+                            },
+                            "errors": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "params": {
+                                            "type": "array",
+                                            "example": ["{params}"],
+                                            "summary": "example for params"
+                                        }
+                                    }
+                                }
+                            },
+                            "detail": {
+                                "type": "string",
+                                "example": "{params} is not allowed to be empty",
+                                "summary": "example for detail"
+                            }
+                        }
+                    }
+                }
+            },
+            "InternalServerError": {
+                "properties": {
+                    "apiVersion": {
+                        "type": "string",
+                        "example": "1.0.0",
+                        "summary": "example for api version"
+                    },
+                    "error": {
+                        "type": "object",
+                        "properties": {
+                            "code": {
+                                "type": "integer",
+                                "example": 500,
+                                "summary": "example for code"
+                            },
+                            "status": {
+                                "type": "string",
+                                "example": "Internal Server Error",
+                                "summary": "example for status"
+                            },
+                            "errors": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "params": {
+                                            "type": "array",
+                                            "example": [""],
+                                            "summary": "example for params"
+                                        }
+                                    }
+                                }
+                            },
+                            "detail": {
+                                "type": "string",
+                                "example": "service error, try again",
+                                "summary": "example for detail"
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

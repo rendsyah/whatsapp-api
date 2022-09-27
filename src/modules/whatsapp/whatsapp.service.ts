@@ -41,6 +41,66 @@ export const whatsappClient = new Client({
     authStrategy: whatsappAuth(WHATSAPP_SESSION_CLIENT, WHATSAPP_SESSION_PATH),
 });
 
+// Whatsapp Connect Service
+const whatsappConnectService = async (message: Message): Promise<void> => {
+    try {
+        const waContact = await message.getContact();
+        const waName = validateRequestParams(validateRequestEmoji(waContact.pushname), "any");
+        const waMessage = validateRequestParams(message.body, "any");
+        const waMedia = validateRequestParams(message.hasMedia ? await whatsappDownloadService(message) : "", "any");
+        const waSender = validateRequestParams(message.from, "num");
+        const waTimestamp = validateRequestMoment(new Date(), "datetime");
+
+        const requestConnectService = {
+            name: waName,
+            message: validateRequestBuffer(waMessage, "encode"),
+            sender: waSender,
+            media: "300",
+            rcvdTime: waTimestamp,
+            photo: validateRequestBuffer(waMedia, "encode"),
+        };
+
+        const processQueue = whatsappConnectQueue();
+
+        await processQueue.add("Connect Process Queue", requestConnectService, { attempts: 10, backoff: 5000, timeout: 60000 });
+    } catch (error) {
+        validateGenerateError(error);
+    }
+};
+
+// Whatsapp Download Service
+const whatsappDownloadService = async (message: Message): Promise<string> => {
+    try {
+        const mediaFile = await message.downloadMedia();
+        const mediaFileMimeType = mediaFile.mimetype?.split("/");
+        const mediaFileType = mediaFileMimeType[0] || "";
+        const mediaFileExtension = mediaFile.filename?.split(".")[1] || mediaFileMimeType[1] || "";
+        const mediaFileDirectory = IRequestMediaType[mediaFileType as keyof typeof IRequestMediaType] || "";
+
+        if (!mediaFileExtension || !mediaFileDirectory) return "";
+
+        const mediaFilename = `${validateRequestMoment(new Date(), "datetime2")}_${randomCharacters(5, "alphanumeric")}.${mediaFileExtension}`;
+        const mediaFileCheckPath = `${appRootPath}/..${WHATSAPP_MEDIA_PATH}${mediaFileDirectory}`;
+        const mediaFilePath = `${mediaFileCheckPath}${mediaFilename}`;
+        const mediaFileData = mediaFile.data;
+
+        if (!fs.existsSync(mediaFileCheckPath)) {
+            fs.mkdir(mediaFileCheckPath, { recursive: true }, (error) => {
+                if (error) validateGenerateError(error);
+                loggerDev.info(`Whatsapp ${mediaFileDirectory} directory has been created!`);
+            });
+        }
+
+        fs.writeFile(mediaFilePath, mediaFileData, "base64", (error) => {
+            if (error) validateGenerateError(error);
+        });
+
+        return mediaFilename;
+    } catch (error) {
+        throw error;
+    }
+};
+
 // Whatsapp Initialization Service
 export const whatsappService = (): void => {
     // Whatsapp Generate QR Code
@@ -109,20 +169,20 @@ export const whatsappReplyService = async (params: IRequestReplyMessageService):
         switch (type) {
             case "text/individual":
                 responseData = await whatsappClient.sendMessage(validateRequestHp(to), body.message);
-                return responseData?.id ?? null;
+                return responseData?.id;
 
             case "text-image/individual":
                 if (body.link) {
                     responseData = await whatsappClient.sendMessage(validateRequestHp(to), body.message, {
                         media: await MessageMedia.fromUrl(body.link, { unsafeMime: true }),
                     });
-                    return responseData?.id ?? null;
+                    return responseData?.id;
                 }
 
             case "template/individual":
                 if (components) {
                     const [{ type, parameters }] = components;
-                    return;
+                    // return;
                 }
 
             default:
@@ -154,66 +214,6 @@ export const whatsappMessageService = async (params: IRequestReplyMessageService
         }
 
         return { data: responseData };
-    } catch (error) {
-        throw error;
-    }
-};
-
-// Whatsapp Connect Service
-const whatsappConnectService = async (message: Message): Promise<void> => {
-    try {
-        const waContact = await message.getContact();
-        const waName = validateRequestParams(validateRequestEmoji(waContact.pushname), "any");
-        const waMessage = validateRequestParams(message.body, "any");
-        const waMedia = validateRequestParams(message.hasMedia ? await whatsappDownloadService(message) : "", "any");
-        const waSender = validateRequestParams(message.from, "num");
-        const waTimestamp = validateRequestMoment(new Date(), "datetime");
-
-        const requestConnectService = {
-            name: waName,
-            message: validateRequestBuffer(waMessage, "encode"),
-            sender: waSender,
-            media: "300",
-            rcvdTime: waTimestamp,
-            photo: validateRequestBuffer(waMedia, "encode"),
-        };
-
-        const processQueue = whatsappConnectQueue();
-
-        await processQueue.add("Connect Process Queue", requestConnectService, { attempts: 10, backoff: 5000, timeout: 60000 });
-    } catch (error) {
-        validateGenerateError(error);
-    }
-};
-
-// Whatsapp Download Service
-const whatsappDownloadService = async (message: Message): Promise<string> => {
-    try {
-        const mediaFile = await message.downloadMedia();
-        const mediaFileMimeType = mediaFile.mimetype?.split("/");
-        const mediaFileType = mediaFileMimeType[0] || "";
-        const mediaFileExtension = mediaFile.filename?.split(".")[1] || mediaFileMimeType[1] || "";
-        const mediaFileDirectory = IRequestMediaType[mediaFileType as keyof typeof IRequestMediaType] || "";
-
-        if (!mediaFileExtension || !mediaFileDirectory) return "";
-
-        const mediaFilename = `${validateRequestMoment(new Date(), "datetime2")}_${randomCharacters(5, "alphanumeric")}.${mediaFileExtension}`;
-        const mediaFileCheckPath = `${appRootPath}/..${WHATSAPP_MEDIA_PATH}${mediaFileDirectory}`;
-        const mediaFilePath = `${mediaFileCheckPath}${mediaFilename}`;
-        const mediaFileData = mediaFile.data;
-
-        if (!fs.existsSync(mediaFileCheckPath)) {
-            fs.mkdir(mediaFileCheckPath, { recursive: true }, (error) => {
-                if (error) validateGenerateError(error);
-                loggerDev.info(`Whatsapp ${mediaFileDirectory} directory has been created!`);
-            });
-        }
-
-        fs.writeFile(mediaFilePath, mediaFileData, "base64", (error) => {
-            if (error) validateGenerateError(error);
-        });
-
-        return mediaFilename;
     } catch (error) {
         throw error;
     }
