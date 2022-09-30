@@ -67,7 +67,7 @@ app.use(expressWinston.errorLogger(loggerError));
 // Middleware Response Error
 app.use((error: any, req: Request, res: Response, next: NextFunction) => {
     const requestResponseData: IRequestDataError = {
-        code: error.code || 500,
+        code: error.statusCode || 500,
         status: error.status || "Internal Server Error",
         params: error.params || "",
         detail: error.detail || error.message || "service error, try again",
