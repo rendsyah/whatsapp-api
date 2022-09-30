@@ -59,7 +59,7 @@ app.use(swaggerRouter);
 app.use("/admin/queues", queues.getRouter());
 
 // Grouping API
-app.use("/api", router);
+app.use("/api/whatsapp", router);
 
 // Error Logger For Production
 app.use(expressWinston.errorLogger(loggerError));

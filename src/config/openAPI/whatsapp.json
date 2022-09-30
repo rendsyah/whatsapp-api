@@ -1,0 +1,239 @@
+{
+    "openapi": "3.0.1",
+    "info": {
+        "title": "Whatsapp API - OpenAPI",
+        "version": "1.0.0",
+        "description": "Documentation of Whatsapp API version 1.0.0",
+        "termsOfService": "http://swagger.io/terms/",
+        "contact": {
+            "name": "Developer",
+            "email": "developer.com"
+        },
+        "license": {
+            "name": "Apache 2.0",
+            "url": "http://www.apache.org/licenses/LICENSE-2.0.html"
+        }
+    },
+    "servers": [
+        {
+            "url": "http://localhost:{port}/api/whatsapp",
+            "description": "Whatsapp API for Local development",
+            "variables": {
+                "port": {
+                    "default": "8080"
+                }
+            }
+        },
+        {
+            "url": "https://{domain}/api/whatsapp",
+            "description": "Whatsapp API for Beta & Production development",
+            "variables": {
+                "domain": {
+                    "enum": ["beta.com", "production.com"],
+                    "default": "beta"
+                }
+            }
+        }
+    ],
+    "externalDocs": {
+        "description": "Find out more about Swagger",
+        "url": "http://swagger.io"
+    },
+    "tags": [
+        {
+            "name": "Whatsapp Message",
+            "description": "Whatsapp Message API"
+        }
+    ],
+    "paths": {
+        "/message": {
+            "post": {
+                "tags": ["Whatsapp Message"],
+                "operationId": "postMessage",
+                "summary": "Send Message to Whatsapp",
+                "consumes": ["application/json"],
+                "produces": ["application/json"],
+                "requestBody": {
+                    "$ref": "#/components/request/Message"
+                },
+                "responses": {
+                    "200": {
+                        "$ref": "#/components/responses/Success"
+                    },
+                    "400": {
+                        "$ref": "#/components/responses/BadRequest"
+                    },
+                    "500": {
+                        "$ref": "#/components/responses/InternalServerError"
+                    }
+                }
+            }
+        }
+    },
+    "components": {
+        "request": {
+            "Message": {
+                "description": "Example Request Send Message",
+                "content": {
+                    "application/json": {
+                        "schema": {
+                            "$ref": "#/components/schemas/Message"
+                        },
+                        "examples": {
+                            "Text": {
+                                "$ref": "#/components/examples/Text"
+                            },
+                            "Text-Image": {
+                                "$ref": "#/components/examples/TextImage"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "responses": {
+            "Success": {
+                "description": "Response Success",
+                "content": {
+                    "appication/json": {
+                        "schema": {
+                            "$ref": "#/components/schemas/Success"
+                        }
+                    }
+                }
+            },
+            "BadRequest": {
+                "description": "Response Bad Request",
+                "content": {
+                    "appication/json": {
+                        "schema": {
+                            "$ref": "#/components/schemas/Error"
+                        }
+                    }
+                }
+            },
+            "NotFound": {
+                "description": "Response Not Found",
+                "content": {
+                    "appication/json": {
+                        "schema": {
+                            "$ref": "#/components/schemas/Error"
+                        }
+                    }
+                }
+            },
+            "InternalServerError": {
+                "description": "Response Internal Server Error",
+                "content": {
+                    "appication/json": {
+                        "schema": {
+                            "$ref": "#/components/schemas/Error"
+                        }
+                    }
+                }
+            }
+        },
+        "schemas": {
+            "Message": {
+                "required": ["to", "type", "body"],
+                "properties": {
+                    "to": {
+                        "type": "string"
+                    },
+                    "type": {
+                        "type": "string"
+                    },
+                    "body": {
+                        "type": "object",
+                        "required": ["message"],
+                        "properties": {
+                            "message": {
+                                "type": "string"
+                            },
+                            "link": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            },
+            "Success": {
+                "properties": {
+                    "apiVersion": {
+                        "type": "string"
+                    },
+                    "data": {
+                        "type": "object",
+                        "properties": {
+                            "code": {
+                                "type": "integer"
+                            },
+                            "status": {
+                                "type": "string"
+                            },
+                            "data": {
+                                "type": "object"
+                            }
+                        }
+                    }
+                }
+            },
+            "Error": {
+                "properties": {
+                    "apiVersion": {
+                        "type": "string"
+                    },
+                    "error": {
+                        "type": "object",
+                        "properties": {
+                            "code": {
+                                "type": "integer"
+                            },
+                            "status": {
+                                "type": "string"
+                            },
+                            "errors": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "params": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "string"
+                                            }
+                                        }
+                                    }
+                                }
+                            },
+                            "detail": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "examples": {
+            "Text": {
+                "value": {
+                    "to": "6281318481635",
+                    "type": "text/individual",
+                    "body": {
+                        "message": "hallo"
+                    }
+                }
+            },
+            "TextImage": {
+                "value": {
+                    "to": "6281318481635",
+                    "type": "text-image/individual",
+                    "body": {
+                        "message": "hallo",
+                        "link": "https://cdns.klimg.com/dream.co.id/resized/640x320/news/2021/07/27/174293/70-kata-bijak-perjuangan-jadi-penyemangat-hidup-inspirasi-gapai-impian-210727i.jpg"
+                    }
+                }
+            }
+        }
+    }
+}

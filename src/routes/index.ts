@@ -28,13 +28,13 @@ import {
 export const router = express.Router();
 
 // Whatsapp Routes
-router.get("/whatsapp", whatsappController);
-router.post("/whatsapp/message", whatsappValidation(whatsappMessageSchema), whatsappMessageController);
+router.get("/", whatsappController);
+router.post("/message", whatsappValidation(whatsappMessageSchema), whatsappMessageController);
 
 // Whatsapp Template Routes
-router.post("/whatsapp/template/create", whatsappValidation(whatsappCreateTemplateSchema), whatsappCreateTemplateController);
-router.get("/whatsapp/template", whatsappValidation(whatsappGetTemplateSchema), whatsappGetTemplateController);
-router.get("/whatsapp/template/all", whatsappValidation(whatsappGetAllTemplateSchema), whatsappGetAllTemplateController);
-router.patch("/whatsapp/template/update", whatsappValidation(whatsappUpdateTemplateSchema), whatsappUpdateTemplateController);
-router.delete("/whatsapp/template/delete", whatsappValidation(whatsappDeleteTemplateSchema), whatsappDeleteTemplateController);
-router.get("/whatsapp/template/download", whatsappValidation(whatsappDownloadTemplateSchema), whatsappDownloadTemplateController);
+router.post("/template/create", whatsappValidation(whatsappCreateTemplateSchema), whatsappCreateTemplateController);
+router.get("/template", whatsappValidation(whatsappGetTemplateSchema), whatsappGetTemplateController);
+router.get("/template", whatsappValidation(whatsappGetAllTemplateSchema), whatsappGetAllTemplateController);
+router.patch("/template/update", whatsappValidation(whatsappUpdateTemplateSchema), whatsappUpdateTemplateController);
+router.delete("/template/delete", whatsappValidation(whatsappDeleteTemplateSchema), whatsappDeleteTemplateController);
+router.get("/template/download", whatsappValidation(whatsappDownloadTemplateSchema), whatsappDownloadTemplateController);

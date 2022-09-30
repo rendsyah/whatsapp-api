@@ -41,7 +41,7 @@ const whatsappConnectQueue = (): Queue.Queue => {
             to: job.data.sender,
             type: "text/individual",
             body: {
-                message: result?.message ?? result?.data?.reply ?? "",
+                message: result?.data?.reply ?? result?.message ?? "",
             },
         };
 
