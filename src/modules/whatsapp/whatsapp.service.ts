@@ -34,7 +34,6 @@ const WHATSAPP_UPLOAD_PATH = process.env.WHATSAPP_UPLOAD_PATH as string;
 // Whatsapp Client
 export const whatsappClient = new Client({
     puppeteer: {
-        args: ["--no-sandbox", "--disable-setuid-sandbox"],
         headless: true,
     },
     takeoverTimeoutMs: 10000,
