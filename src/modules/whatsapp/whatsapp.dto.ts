@@ -1,33 +1,25 @@
-// Interfaces Whatsapp
+// Interfaces Reply Message
 interface IRequestBody {
     message: string;
     link?: string;
 }
 
-interface IRequestParameter {
-    type: string;
-    text: string;
-    link: string;
-}
-
-interface IRequestComponent {
-    type: string;
-    parameters: IRequestParameter[];
-}
+type IRequestType = "text/individual" | "text-image/individual";
 
 export interface IRequestReplyMessageService {
     to: string;
-    type: string;
+    type: IRequestType;
     body: IRequestBody;
-    components?: IRequestComponent[];
 }
 
+// Interfaces Media Type
 export enum IRequestMediaType {
     image = "image/",
     video = "video/",
     application = "docs/",
 }
 
+// Interfaces Response Service
 export interface IResponseWhatsappService {
     data: unknown;
 }

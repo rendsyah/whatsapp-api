@@ -31,35 +31,5 @@ export const whatsappMessageSchema = Joi.object<IRequestReplyMessageService>({
                 otherwise: Joi.forbidden(),
             })
             .label("link"),
-    }),
-    components: Joi.array()
-        .items(
-            Joi.object({
-                type: Joi.string().valid("header", "body", "footer").required().label("type").messages({ "any.only": "type is not exists" }),
-                parameters: Joi.array()
-                    .items(
-                        Joi.object({
-                            type: Joi.string()
-                                .valid("text", "image", "document")
-                                .required()
-                                .label("type")
-                                .messages({ "any.only": "type is not exists" }),
-                            text: Joi.string().required().label("text"),
-                            link: Joi.string()
-                                .when(Joi.ref("type"), {
-                                    is: Joi.string().valid("image", "document"),
-                                    then: Joi.string()
-                                        .uri({ scheme: ["http", "https"] })
-                                        .required()
-                                        .label("link")
-                                        .messages({ "string.uriCustomScheme": "link must be a valid uri" }),
-                                    otherwise: Joi.forbidden(),
-                                })
-                                .label("link"),
-                        }),
-                    )
-                    .label("parameters"),
-            }),
-        )
-        .allow(null),
+    }).required(),
 });

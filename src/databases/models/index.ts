@@ -1,8 +1,8 @@
 // Model Schemas
-import Channels from "./channel";
-import Templates from "./template";
+import Incominglogs from "./incomingLogs";
+import OutgoingLogs from "./outgoingLogs";
 
 export default {
-    Channels,
-    Templates,
+    Incominglogs,
+    OutgoingLogs,
 };
