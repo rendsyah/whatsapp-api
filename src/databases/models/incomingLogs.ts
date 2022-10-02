@@ -6,6 +6,7 @@ interface IIncomingLogs extends Document {
     from: string;
     to: string;
     message: string;
+    media: string;
     receivedTime: string;
     type: string;
     device: string;
@@ -24,6 +25,10 @@ const incomingLogsSchema = new Schema<IIncomingLogs>(
             required: true,
         },
         message: {
+            type: String,
+            default: "",
+        },
+        media: {
             type: String,
             default: "",
         },
