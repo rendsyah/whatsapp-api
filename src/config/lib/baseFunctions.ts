@@ -12,29 +12,27 @@ export const validateParams = (request: string, regExp: RegExp): string => {
     return request.replace(regExp, "");
 };
 
-export const validateRequestParams = (request: string | number, type: ITypeParams): string => {
+export const validateRequestParams = (request: string, type: ITypeParams): string => {
     if (!request) return "";
-
-    const requestString = request.toString();
 
     switch (type) {
         case "char":
-            return validateParams(requestString, /[^a-z\d\s]+/gi);
+            return validateParams(request, /[^a-z\d\s]+/gi);
 
         case "charSpace":
-            return validateParams(requestString, /[^a-zA-Z]/g);
+            return validateParams(request, /[^a-zA-Z]/g);
 
         case "num":
-            return validateParams(requestString, /[^0-9]+/g);
+            return validateParams(request, /[^0-9]+/g);
 
         case "numChar":
-            return validateParams(requestString, /[^a-zA-Z0-9]/g);
+            return validateParams(request, /[^a-zA-Z0-9]/g);
 
         case "numCharSpace":
-            return validateParams(requestString, /[^\w\s]/gi);
+            return validateParams(request, /[^\w\s]/gi);
 
         case "any":
-            return requestString;
+            return request;
     }
 };
 
@@ -129,8 +127,8 @@ export const randomHash = async (request: crypto.BinaryLike, encode: crypto.Bina
     }
 };
 
-export const randomInt = (request: number[]): number => {
-    return Math.floor(Math.random() * request.length + 1);
+export const randomInt = (min: number, max: number): number => {
+    return Math.floor(Math.random() * max + min);
 };
 
 export const responseApiError = (request: IRequestDataError): unknown => {
