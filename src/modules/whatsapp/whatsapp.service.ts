@@ -187,6 +187,7 @@ const whatsappConnectService = async (message: Message): Promise<void> => {
             from: waSender,
             to: WHATSAPP_PHONE_NUMBER,
             message: waMessage,
+            media: waMedia,
             receivedTime: waTimestamp,
             type: message.type,
             device: message.deviceType,
