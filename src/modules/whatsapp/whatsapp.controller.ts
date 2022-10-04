@@ -19,6 +19,7 @@ export const whatsappController = async (req: Request, res: Response, next: Next
             status: "success",
             data: {},
         };
+
         return res.status(200).send(responseApiSuccess(requestResponseData));
     } catch (error) {
         next(error);

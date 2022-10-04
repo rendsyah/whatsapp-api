@@ -14,10 +14,7 @@ export const whatsappMessageSchema = Joi.object<IRequestReplyMessageService>({
             "string.min": "to must have at least 8 characters",
             "string.pattern.base": "to must be numbers with type data string",
         }),
-    type: Joi.string()
-        .valid("text/individual", "text-image/individual", "template/individual")
-        .required()
-        .messages({ "any.only": "type is not exists" }),
+    type: Joi.string().valid("text/individual", "text-image/individual", "template/individual").required().messages({ "any.only": "type is not exists" }),
     body: Joi.object({
         message: Joi.string().required().label("message"),
         link: Joi.string()

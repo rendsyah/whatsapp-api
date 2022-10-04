@@ -68,7 +68,8 @@ export const whatsappService = (): void => {
             });
         }
 
-        loggerDev.info("Whatsapp is connected");
+        loggerDev.info("Whatsapp is ready");
+        loggerDev.info(`Whatsapp connected on ${whatsappClient.info.pushname}`);
         loggerDev.info(`Whatsapp version ${whatsappVersion}`);
     });
 

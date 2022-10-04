@@ -39,9 +39,7 @@ app.use(cors());
 app.use(helmet());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-app.use("/image", express.static(`${appRootPath}/..${WHATSAPP_MEDIA_PATH}image`));
-app.use("/docs", express.static(`${appRootPath}/..${WHATSAPP_MEDIA_PATH}docs`));
-app.use("/video", express.static(`${appRootPath}/..${WHATSAPP_MEDIA_PATH}video`));
+app.use("/media", express.static(`${appRootPath}/..${WHATSAPP_MEDIA_PATH}`));
 
 // Mongo Database Connection
 mongoConnection();
@@ -63,6 +61,18 @@ app.use("/api/whatsapp", router);
 
 // Error Logger For Production
 app.use(expressWinston.errorLogger(loggerError));
+
+// Middleware Routes Error
+app.use((req: Request, res: Response, next: NextFunction) => {
+    const requestResponseData: IRequestDataError = {
+        code: 404,
+        status: "Not Found",
+        params: req.path,
+        detail: "unknown routes, try again",
+    };
+
+    return res.status(404).send(responseApiError(requestResponseData));
+});
 
 // Middleware Response Error
 app.use((error: any, req: Request, res: Response, next: NextFunction) => {

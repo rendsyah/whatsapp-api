@@ -14,9 +14,7 @@ export const axiosInstance = axios.create({
 axiosInstance.interceptors.request.use(
     (request) => {
         logger.info(
-            `SEND REQUEST, URL: ${request.url}, METHOD: ${request.method}, DATA: ${JSON.stringify(request.data)}, HEADERS: ${JSON.stringify(
-                request.headers,
-            )}`,
+            `SEND REQUEST, URL: ${request.url}, METHOD: ${request.method}, DATA: ${JSON.stringify(request.data)}, HEADERS: ${JSON.stringify(request.headers)}`,
         );
         return request;
     },
