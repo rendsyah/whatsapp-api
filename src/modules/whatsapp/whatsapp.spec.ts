@@ -20,42 +20,42 @@ describe("Whatsapp API", () => {
     });
 
     describe("POST /api/whatsapp/message", () => {
-        //     it("should POST whatsapp api send text/individual message", async () => {
-        //         const data = {
-        //             to: "6281318481635",
-        //             type: "text/individual",
-        //             body: {
-        //                 message: "hallo",
-        //             },
-        //         };
+        it("should POST whatsapp api send text/individual message", async () => {
+            const data = {
+                to: "6281318481635",
+                type: "text/individual",
+                body: {
+                    message: "hallo",
+                },
+            };
 
-        //         const response = await request(WHATSAPP_BASE_URL).post("/message").send(data);
+            const response = await request(WHATSAPP_BASE_URL).post("/message").send(data);
 
-        //         expect(response.status).to.equal(200);
-        //         expect(response.body).to.have.property("data").a("object");
-        //         expect(response.body.data).to.have.property("code").equal(200);
-        //         expect(response.body.data).to.have.property("status").equal("success");
-        //         expect(response.body.data.data).to.be.a("object");
-        //     });
+            expect(response.status).to.equal(200);
+            expect(response.body).to.have.property("data").a("object");
+            expect(response.body.data).to.have.property("code").equal(200);
+            expect(response.body.data).to.have.property("status").equal("success");
+            expect(response.body.data).to.have.property("data").a("object");
+        });
 
-        //     it("should POST whatsapp api send text-image/individual message", async () => {
-        //         const data = {
-        //             to: "6281318481635",
-        //             type: "text-image/individual",
-        //             body: {
-        //                 message: "hallo",
-        //                 link: "https://cdns.klimg.com/dream.co.id/resized/640x320/news/2021/07/27/174293/70-kata-bijak-perjuangan-jadi-penyemangat-hidup-inspirasi-gapai-impian-210727i.jpg",
-        //             },
-        //         };
+        it("should POST whatsapp api send text-image/individual message", async () => {
+            const data = {
+                to: "6281318481635",
+                type: "text-image/individual",
+                body: {
+                    message: "hallo",
+                    link: "https://cdns.klimg.com/dream.co.id/resized/640x320/news/2021/07/27/174293/70-kata-bijak-perjuangan-jadi-penyemangat-hidup-inspirasi-gapai-impian-210727i.jpg",
+                },
+            };
 
-        //         const response = await request(WHATSAPP_BASE_URL).post("/message").send(data);
+            const response = await request(WHATSAPP_BASE_URL).post("/message").send(data);
 
-        //         expect(response.status).to.equal(200);
-        //         expect(response.body).to.have.property("data").a("object");
-        //         expect(response.body.data).to.have.property("code").equal(200);
-        //         expect(response.body.data).to.have.property("status").equal("success");
-        //         expect(response.body.data.data).to.be.a("object");
-        //     });
+            expect(response.status).to.equal(200);
+            expect(response.body).to.have.property("data").a("object");
+            expect(response.body.data).to.have.property("code").equal(200);
+            expect(response.body.data).to.have.property("status").equal("success");
+            expect(response.body.data).to.have.property("data").a("object");
+        });
 
         it("should POST whatsapp api and (to) is not allowed to be empty", async () => {
             const data = {
@@ -140,10 +140,31 @@ describe("Whatsapp API", () => {
             expect(response.body.error.errors[0].params[0]).to.equal("type");
         });
 
-        it("should POST whatsapp api and (type) is not exists", async () => {
+        it("should POST whatsapp api and (type) is not allowed to be empty", async () => {
             const data = {
                 to: "6281318481635",
                 type: "",
+                body: {
+                    message: "hallo",
+                },
+            };
+
+            const response = await request(WHATSAPP_BASE_URL).post("/message").send(data);
+
+            expect(response.status).to.equal(400);
+            expect(response.body).to.have.property("error").a("object");
+            expect(response.body.error).to.have.property("code").equal(400);
+            expect(response.body.error).to.have.property("status").equal("Bad Request");
+            expect(response.body.error).to.have.property("errors").a("array").length(1);
+            expect(response.body.error).to.have.property("detail").a("string").equal("type is not exists");
+            expect(response.body.error.errors[0]).to.have.property("params").a("array").length(1);
+            expect(response.body.error.errors[0].params[0]).to.equal("type");
+        });
+
+        it("should POST whatsapp api and (type) is not exists", async () => {
+            const data = {
+                to: "6281318481635",
+                type: "text/individualsss",
                 body: {
                     message: "hallo",
                 },
