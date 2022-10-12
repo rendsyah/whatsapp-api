@@ -6,11 +6,11 @@ interface IOutgoingLog extends Document {
     from: string;
     to: string;
     message: string;
-    link: string;
+    media: string;
     sentTime: string;
     type: string;
-    _status: number;
     status: string;
+    _status: number;
 }
 
 // Channel Schema
@@ -28,7 +28,7 @@ const OutgoingLogSchema = new Schema<IOutgoingLog>(
             type: String,
             default: "",
         },
-        link: {
+        media: {
             type: String,
             default: "",
         },
@@ -39,13 +39,13 @@ const OutgoingLogSchema = new Schema<IOutgoingLog>(
             type: String,
             required: true,
         },
-        _status: {
-            type: Number,
-            default: 0,
-        },
         status: {
             type: String,
             default: "",
+        },
+        _status: {
+            type: Number,
+            default: 0,
         },
     },
     {

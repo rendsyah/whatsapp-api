@@ -84,11 +84,11 @@ export const whatsappService = (): void => {
         const _status = message.ack;
 
         if (_status === 2) {
-            await models.OutgoingLogs.updateMany({ to, _status: 1 }, { $set: { _status, status: "sent" } });
+            await models.OutgoingLogs.updateMany({ to, _status: 1 }, { $set: { status: "sent", _status } });
         }
 
         if (_status === 3) {
-            await models.OutgoingLogs.updateMany({ to, _status: { $in: [1, 2] } }, { $set: { _status, status: "read" } });
+            await models.OutgoingLogs.updateMany({ to, _status: { $in: [1, 2] } }, { $set: { status: "read", _status } });
         }
     });
 
@@ -137,7 +137,7 @@ export const whatsappReplyService = async (params: IRequestReplyMessageService):
             from: WHATSAPP_PHONE_NUMBER,
             to: to,
             message: body.message,
-            link: body.link ? body.link : "",
+            media: body.link ? body.link : "",
             sentTime: validateRequestMoment(new Date(), "datetime"),
             type: body.link ? "text-image" : "text",
             _status: 1,
@@ -197,10 +197,12 @@ const whatsappConnectService = async (message: Message): Promise<void> => {
 
         const requestConnectService = {
             name: waName,
-            message: validateRequestBuffer(waMessage, "encode"),
+            // message: validateRequestBuffer(waMessage, "encode"),
+            message: waMessage,
             sender: waSender,
-            media: "300",
-            rcvdTime: waTimestamp,
+            media: 300,
+            // rcvdTime: waTimestamp,
+            timestamp: waTimestamp,
             photo: validateRequestBuffer(waMedia, "encode"),
         };
 

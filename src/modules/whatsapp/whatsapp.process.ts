@@ -15,17 +15,12 @@ import { whatsappReplyService } from "./whatsapp.service";
 const WHATSAPP_API_CONNECT = process.env.WHATSAPP_API_CONNECT as string;
 
 // Whatsapp Connect Queue
-const whatsappConnectQueue = (): Queue.Queue => {
+export const whatsappConnectQueue = (): Queue.Queue => {
     const queue = createQueue("Connect Queue");
 
     queue.process("Connect Process Queue", async (job: Queue.Job): Promise<string> => {
         // Connect Service With Body
         const responseData = await axios.post(WHATSAPP_API_CONNECT, { ...job.data });
-
-        // Connect Service With Params
-        // const responseData = await axios.get(
-        //     `${WHATSAPP_API_CONNECT}?name=${waName}&sender=${waSender}&message=${waMessage}&timestamp=${waTimestamp}`,
-        // );
 
         return responseData.data;
     });
@@ -55,7 +50,7 @@ const whatsappConnectQueue = (): Queue.Queue => {
 };
 
 // Whatsapp Message Queue
-const whatsappMessageQueue = (): Queue.Queue => {
+export const whatsappMessageQueue = (): Queue.Queue => {
     const queue = createQueue("Message Queue");
 
     queue.process("Message Process Queue", (job: Queue.Job): Promise<unknown> => {
@@ -79,5 +74,3 @@ const whatsappMessageQueue = (): Queue.Queue => {
 
     return queue;
 };
-
-export { whatsappConnectQueue, whatsappMessageQueue };
