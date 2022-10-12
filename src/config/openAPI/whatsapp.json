@@ -16,13 +16,8 @@
     },
     "servers": [
         {
-            "url": "http://localhost:{port}/api/whatsapp",
-            "description": "Whatsapp API for Local development",
-            "variables": {
-                "port": {
-                    "default": "8080"
-                }
-            }
+            "url": "http://localhost:8080/api/whatsapp",
+            "description": "Whatsapp API for Local development"
         },
         {
             "url": "https://{domain}/api/whatsapp",

@@ -59,11 +59,21 @@ export const whatsappService = (): void => {
         const whatsappVersion = await whatsappClient.getWWebVersion();
 
         if (!fs.existsSync(`${appRootPath}/..${WHATSAPP_MEDIA_PATH}` && `${appRootPath}/..${WHATSAPP_UPLOAD_PATH}`)) {
-            const folders: readonly string[] = [`${appRootPath}/..${WHATSAPP_MEDIA_PATH}`, `${appRootPath}/..${WHATSAPP_UPLOAD_PATH}`];
-            folders.forEach((path, i) => {
-                fs.mkdir(path, { recursive: true }, (error) => {
+            const whatsappDirectory: readonly any[] = [
+                {
+                    name: "media",
+                    path: `${appRootPath}/..${WHATSAPP_MEDIA_PATH}`,
+                },
+                {
+                    name: "uploads",
+                    path: `${appRootPath}/..${WHATSAPP_UPLOAD_PATH}`,
+                },
+            ];
+
+            whatsappDirectory.forEach((v, i) => {
+                fs.mkdir(v.path, { recursive: true }, (error) => {
                     if (error) validateGenerateError(error);
-                    loggerDev.info(`Whatsapp ${!i ? "media" : "upload"} directory has been created`);
+                    loggerDev.info(`Whatsapp ${v.name} directory has been created`);
                 });
             });
         }
@@ -110,6 +120,8 @@ export const whatsappService = (): void => {
     // Whatsapp Disconnected
     whatsappClient.on("disconnected", async (): Promise<void> => {
         await whatsappClient.destroy();
+        fs.rmSync(`${appRootPath}/${WHATSAPP_SESSION_PATH}`, { recursive: true, force: true });
+
         loggerDev.info("Whatsapp is disconnected");
     });
 
@@ -139,7 +151,7 @@ export const whatsappReplyService = async (params: IRequestReplyMessageService):
             message: body.message,
             media: body.link ? body.link : "",
             sentTime: validateRequestMoment(new Date(), "datetime"),
-            type: body.link ? "text-image" : "text",
+            type: type,
             _status: 1,
         });
 
@@ -152,16 +164,8 @@ export const whatsappReplyService = async (params: IRequestReplyMessageService):
 // Whatsapp Message Services
 export const whatsappMessageService = async (params: IRequestReplyMessageService): Promise<IResponseWhatsappService> => {
     try {
-        const { to, type, body } = params;
-
-        const requestReplyService: IRequestReplyMessageService = {
-            to,
-            type,
-            body,
-        };
-
         const processQueue = whatsappMessageQueue();
-        const responseQueue = await processQueue.add("Message Process Queue", requestReplyService);
+        const responseQueue = await processQueue.add("Message Process Queue", { ...params });
         const responseData = await responseQueue.finished();
 
         if (!responseData) {
@@ -218,16 +222,17 @@ const whatsappConnectService = async (message: Message): Promise<void> => {
 const whatsappDownloadService = async (message: Message): Promise<string> => {
     try {
         const mediaFile = await message.downloadMedia();
-        const mediaFileMimeType = mediaFile.mimetype?.split("/");
-        const mediaFileType = mediaFileMimeType[0] || "";
-        const mediaFileExtension = mediaFile.filename?.split(".")[1] || mediaFileMimeType[1] || "";
-        const mediaFileDirectory = IRequestMediaType[mediaFileType as keyof typeof IRequestMediaType] || "";
+        const mediaFileMimeType = mediaFile.mimetype?.split("/") ?? null;
+        const mediaFileType = mediaFileMimeType?.[0];
+        const mediaFileExtension = mediaFile.filename?.split(".")?.[1] ?? mediaFileMimeType?.[1];
+        const mediaFileDirectory = IRequestMediaType[mediaFileType as keyof typeof IRequestMediaType];
 
         if (!mediaFileExtension || !mediaFileDirectory) {
             throw new Error("download media failed");
         }
 
-        const mediaFilename = `${validateRequestMoment(new Date(), "datetime2")}_${randomCharacters(5, "alphanumeric")}.${mediaFileExtension}`;
+        const mediaName = `${validateRequestMoment(new Date(), "datetime2")}_${randomCharacters(5, "alphanumeric")}`;
+        const mediaFilename = `${mediaName}.${mediaFileExtension}`;
         const mediaFileCheckPath = `${appRootPath}/..${WHATSAPP_MEDIA_PATH}${mediaFileDirectory}`;
         const mediaFilePath = `${mediaFileCheckPath}${mediaFilename}`;
         const mediaFileData = mediaFile.data;

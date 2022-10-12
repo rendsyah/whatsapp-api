@@ -19,7 +19,6 @@ export const whatsappConnectQueue = (): Queue.Queue => {
     const queue = createQueue("Connect Queue");
 
     queue.process("Connect Process Queue", async (job: Queue.Job): Promise<string> => {
-        // Connect Service With Body
         const responseData = await axios.post(WHATSAPP_API_CONNECT, { ...job.data });
 
         return responseData.data;
@@ -53,7 +52,7 @@ export const whatsappConnectQueue = (): Queue.Queue => {
 export const whatsappMessageQueue = (): Queue.Queue => {
     const queue = createQueue("Message Queue");
 
-    queue.process("Message Process Queue", (job: Queue.Job): Promise<unknown> => {
+    queue.process("Message Process Queue", async (job: Queue.Job): Promise<unknown> => {
         return whatsappReplyService({ ...job.data });
     });
 
@@ -63,13 +62,9 @@ export const whatsappMessageQueue = (): Queue.Queue => {
     });
 
     queue.on("completed", async (job: Queue.Job, result): Promise<void> => {
-        try {
-            const completedQueue = await job.finished();
-            job.progress(100);
-            job.log(`Success: ${JSON.stringify(completedQueue)}`);
-        } catch (error) {
-            throw error;
-        }
+        const completedQueue = await job.finished();
+        job.progress(100);
+        job.log(`Success: ${JSON.stringify(completedQueue)}`);
     });
 
     return queue;
