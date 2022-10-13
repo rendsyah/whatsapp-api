@@ -120,7 +120,7 @@ export const whatsappService = (): void => {
     // Whatsapp Disconnected
     whatsappClient.on("disconnected", async (): Promise<void> => {
         await whatsappClient.destroy();
-        fs.rmSync(`${appRootPath}/${WHATSAPP_SESSION_PATH}`, { recursive: true, force: true });
+        fs.rmSync(`${appRootPath}${WHATSAPP_SESSION_PATH}`, { recursive: true, force: true });
 
         loggerDev.info("Whatsapp is disconnected");
     });
