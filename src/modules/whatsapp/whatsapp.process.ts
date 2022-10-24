@@ -21,8 +21,12 @@ export const messageQueue = createQueue("Message Queue");
 // Whatsapp Connect Queue
 const whatsappConnectQueue = async () => {
     connectQueue.process("Connect Process Queue", async (job: Queue.Job): Promise<unknown> => {
-        const responseData = await axios.post(WHATSAPP_API_CONNECT, { ...job.data });
-        return responseData.data;
+        return await axios
+            .post(WHATSAPP_API_CONNECT, { ...job.data })
+            .then((v) => v?.data)
+            .catch((error) => {
+                throw new Error(error);
+            });
     });
 
     connectQueue.on("failed", async (job: Queue.Job, error: Error): Promise<void> => {
