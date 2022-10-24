@@ -22,7 +22,7 @@ import {
 import models from "../../databases/models";
 
 // Processes
-import { whatsappConnectQueue, whatsappMessageQueue } from "./whatsapp.process";
+import { connectQueue, messageQueue } from "./whatsapp.process";
 
 // Whatsapp Environments
 const WHATSAPP_PHONE_NUMBER = process.env.WHATSAPP_PHONE_NUMBER as string;
@@ -30,19 +30,22 @@ const WHATSAPP_SESSION_CLIENT = process.env.WHATSAPP_SESSION_CLIENT as string;
 const WHATSAPP_SESSION_PATH = process.env.WHATSAPP_SESSION_PATH as string;
 const WHATSAPP_MEDIA_PATH = process.env.WHATSAPP_MEDIA_PATH as string;
 const WHATSAPP_UPLOAD_PATH = process.env.WHATSAPP_UPLOAD_PATH as string;
+const WHATSAPP_RESET_CONNECTION = process.env.WHATSAPP_RESET_CONNECTION as string;
 
 // Whatsapp Client
 export const whatsappClient = new Client({
     puppeteer: {
         headless: true,
     },
-    takeoverTimeoutMs: 10000,
     qrMaxRetries: 10000,
     authStrategy: whatsappAuth(WHATSAPP_SESSION_CLIENT, WHATSAPP_SESSION_PATH),
 });
 
 // Whatsapp Initialization Service
 export const whatsappService = (): void => {
+    // Whatsapp Initialize
+    whatsappClient.initialize();
+
     // Whatsapp Generate QR Code
     whatsappClient.on("qr", async (qr): Promise<void> => {
         loggerDev.info("Whatsapp QR Code received");
@@ -78,7 +81,7 @@ export const whatsappService = (): void => {
             });
         }
 
-        loggerDev.info("Whatsapp is ready");
+        loggerDev.info("Whatsapp connection ready");
         loggerDev.info(`Whatsapp connected on ${whatsappClient.info.pushname}`);
         loggerDev.info(`Whatsapp version ${whatsappVersion}`);
     });
@@ -109,32 +112,33 @@ export const whatsappService = (): void => {
         }
 
         if (state === "PAIRING") {
+            setTimeout(async () => {
+                await whatsappClient.resetState();
+            }, +WHATSAPP_RESET_CONNECTION);
+
             loggerDev.info("Whatsapp connection pairing...");
         }
 
         if (state === "CONNECTED") {
-            loggerDev.info("Whatsapp connection is connected");
+            loggerDev.info("Whatsapp connection connected");
         }
     });
 
     // Whatsapp Disconnected
     whatsappClient.on("disconnected", async (): Promise<void> => {
         await whatsappClient.destroy();
-        fs.rmSync(`${appRootPath}${WHATSAPP_SESSION_PATH}`, { recursive: true, force: true });
 
-        loggerDev.info("Whatsapp is disconnected");
+        loggerDev.info("Whatsapp session closed...");
+        whatsappClient.initialize();
     });
-
-    // Whatsapp Initialize
-    whatsappClient.initialize();
 };
 
 // Whatsapp Reply Service
 export const whatsappReplyService = async (params: IRequestReplyMessageService): Promise<Message> => {
     try {
         const { to, type, body } = params;
-        let responseData: any;
 
+        let responseData: any;
         if (type === "text/individual") {
             responseData = await whatsappClient.sendMessage(validateRequestHp(to), body.message);
         }
@@ -164,8 +168,7 @@ export const whatsappReplyService = async (params: IRequestReplyMessageService):
 // Whatsapp Message Services
 export const whatsappMessageService = async (params: IRequestReplyMessageService): Promise<IResponseWhatsappService> => {
     try {
-        const processQueue = whatsappMessageQueue();
-        const responseQueue = await processQueue.add("Message Process Queue", { ...params });
+        const responseQueue = await messageQueue.add("Message Process Queue", { ...params });
         const responseData = await responseQueue.finished();
 
         if (!responseData) {
@@ -201,19 +204,16 @@ const whatsappConnectService = async (message: Message): Promise<void> => {
 
         const requestConnectService = {
             name: waName,
-            // message: validateRequestBuffer(waMessage, "encode"),
-            message: waMessage,
+            message: validateRequestBuffer(waMessage, "encode"),
             sender: waSender,
             media: 300,
-            // rcvdTime: waTimestamp,
-            timestamp: waTimestamp,
+            rcvdTime: waTimestamp,
             photo: validateRequestBuffer(waMedia, "encode"),
         };
 
-        const processQueue = whatsappConnectQueue();
-
-        await processQueue.add("Connect Process Queue", requestConnectService, { attempts: 10, backoff: 5000, timeout: 60000 });
+        await connectQueue.add("Connect Process Queue", requestConnectService, { attempts: 10, backoff: 5000, timeout: 60000 });
     } catch (error) {
+        console.log(error);
         validateGenerateError(error);
     }
 };
