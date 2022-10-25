@@ -1,18 +1,25 @@
-// Interfaces Reply Message
+// Interfaces Message Service
 interface IRequestBody {
     message: string;
-    link?: string;
+    image?: string;
 }
 
-type IRequestType = "text/individual" | "text-image/individual";
-
-export interface IRequestReplyMessageService {
+export interface IRequestMessageService {
     to: string;
-    type: IRequestType;
+    type: string;
     body: IRequestBody;
 }
 
-// Interfaces Media Type
+// Interfaces Reply Service
+export interface IRequestReplyService {
+    to: string;
+    message: string;
+    media: string;
+    type: string;
+    image?: string;
+}
+
+// Interfaces Media
 export enum IRequestMediaType {
     image = "image/",
     video = "video/",

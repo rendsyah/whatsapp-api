@@ -22,7 +22,6 @@ const OutgoingLogSchema = new Schema<IOutgoingLog>(
         },
         to: {
             type: String,
-            required: true,
         },
         message: {
             type: String,
@@ -37,7 +36,6 @@ const OutgoingLogSchema = new Schema<IOutgoingLog>(
         },
         type: {
             type: String,
-            required: true,
         },
         status: {
             type: String,

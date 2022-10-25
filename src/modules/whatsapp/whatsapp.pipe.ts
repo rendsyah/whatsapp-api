@@ -2,10 +2,10 @@
 import Joi from "joi";
 
 // Interfaces
-import { IRequestReplyMessageService } from "./whatsapp.dto";
+import { IRequestMessageService } from "./whatsapp.dto";
 
 // Whatsapp Schemas
-export const whatsappMessageSchema = Joi.object<IRequestReplyMessageService>({
+export const whatsappMessageSchema = Joi.object<IRequestMessageService>({
     to: Joi.string()
         .min(8)
         .pattern(new RegExp(/^[0-9]+$/))
@@ -17,16 +17,12 @@ export const whatsappMessageSchema = Joi.object<IRequestReplyMessageService>({
     type: Joi.string().valid("text/individual", "text-image/individual", "template/individual").required().messages({ "any.only": "type is not exists" }),
     body: Joi.object({
         message: Joi.string().required().label("message"),
-        link: Joi.string()
+        image: Joi.string()
             .when(Joi.ref("...type"), {
                 is: Joi.string().valid("text-image/individual"),
-                then: Joi.string()
-                    .uri({ scheme: ["http", "https"] })
-                    .required()
-                    .label("link")
-                    .messages({ "string.uriCustomScheme": "link must be a valid uri" }),
+                then: Joi.string().required().label("image"),
                 otherwise: Joi.forbidden(),
             })
-            .label("link"),
+            .label("image"),
     }).required(),
 });
