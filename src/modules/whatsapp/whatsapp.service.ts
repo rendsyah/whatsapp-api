@@ -36,7 +36,6 @@ const WHATSAPP_RESET_CONNECTION = process.env.WHATSAPP_RESET_CONNECTION as strin
 export const whatsappClient = new Client({
     puppeteer: {
         headless: true,
-        args: ["--no-sandbox", "--disable-setuid-sandbox"],
     },
     qrMaxRetries: 10000,
     authStrategy: whatsappAuth(WHATSAPP_SESSION_CLIENT, WHATSAPP_SESSION_PATH),
