@@ -219,7 +219,11 @@ const whatsappConnectService = async (message: Message): Promise<void> => {
                 type: message.type,
             };
 
-            await whatsappReplyService(requestReplyService);
+            await replyQueue.add("Reply Process Queue", requestReplyService, {
+                attempts: 3,
+                backoff: 5000,
+                timeout: 60000,
+            });
         }
 
         await models.Incominglogs.create({
