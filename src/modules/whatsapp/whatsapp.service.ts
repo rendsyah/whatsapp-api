@@ -176,7 +176,7 @@ export const whatsappMessageService = async (params: IRequestMessageService): Pr
             const mediaName = `${validateRequestMoment(new Date(), "datetime2")}_${randomCharacters(5, "alphanumeric")}`;
             filename = `${mediaName}.jpeg`;
 
-            fs.writeFile(filename, image, "base64", (error) => {
+            fs.writeFile(`${appRootPath}/..${WHATSAPP_UPLOAD_PATH}${filename}`, image, "base64", (error) => {
                 if (error) throw error;
             });
         }
