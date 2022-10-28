@@ -19,13 +19,6 @@ export interface IRequestReplyService {
     image?: string;
 }
 
-// Interfaces Media
-export enum IRequestMediaType {
-    image = "image/",
-    video = "video/",
-    application = "docs/",
-}
-
 // Interfaces Response Service
 export interface IResponseWhatsappService {
     data: unknown;

@@ -5,7 +5,7 @@ import fs from "fs";
 import appRootPath from "app-root-path";
 
 // Interfaces
-import { IRequestMediaType, IRequestMessageService, IRequestReplyService, IResponseWhatsappService } from "./whatsapp.interface";
+import { IRequestMessageService, IRequestReplyService, IResponseWhatsappService } from "./whatsapp.interface";
 
 // Commons
 import { whatsappAuth } from "../../middlewares";
@@ -249,26 +249,16 @@ const whatsappDownloadService = async (message: Message): Promise<string> => {
     try {
         const mediaFile = await message.downloadMedia();
         const mediaFileMimeType = mediaFile.mimetype?.split("/") ?? null;
-        const mediaFileType = mediaFileMimeType?.[0];
         const mediaFileExtension = mediaFile.filename?.split(".")?.[1] ?? mediaFileMimeType?.[1];
-        const mediaFileDirectory = IRequestMediaType[mediaFileType as keyof typeof IRequestMediaType];
 
-        if (!mediaFileExtension || !mediaFileDirectory) {
+        if (!mediaFileExtension) {
             throw new Error("download media failed");
         }
 
         const mediaName = `${validateRequestMoment(new Date(), "datetime2")}_${randomCharacters(5, "alphanumeric")}`;
         const mediaFilename = `${mediaName}.${mediaFileExtension}`;
-        const mediaFileCheckPath = `${appRootPath}/..${WHATSAPP_MEDIA_PATH}${mediaFileDirectory}`;
-        const mediaFilePath = `${mediaFileCheckPath}${mediaFilename}`;
+        const mediaFilePath = `${appRootPath}/..${WHATSAPP_MEDIA_PATH}${mediaFilename}`;
         const mediaFileData = mediaFile.data;
-
-        if (!fs.existsSync(mediaFileCheckPath)) {
-            fs.mkdir(mediaFileCheckPath, { recursive: true }, (error) => {
-                if (error) throw error;
-                loggerDev.info(`Whatsapp ${mediaFileDirectory} directory has been created!`);
-            });
-        }
 
         fs.writeFile(mediaFilePath, mediaFileData, "base64", (error) => {
             if (error) throw error;
