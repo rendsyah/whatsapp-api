@@ -13,7 +13,7 @@ import { IRequestDataError } from "./config/lib/base.dto";
 
 // Commons
 import { configQueues } from "./config/queues";
-import { connectQueue, messageQueue } from "./modules/whatsapp/whatsapp.process";
+import { connectQueue, replyQueue } from "./modules/whatsapp/whatsapp.process";
 import { mongoConnection } from "./databases";
 import { whatsappService } from "./modules/whatsapp/whatsapp.service";
 import { loggerDev } from "./config/logs/logger.development";
@@ -31,7 +31,7 @@ const WHATSAPP_MEDIA_PATH = process.env.WHATSAPP_MEDIA_PATH as string;
 const app = express();
 
 // Config Queues
-const whatsappProcessQueues = [connectQueue, messageQueue];
+const whatsappProcessQueues = [connectQueue, replyQueue];
 const queues = configQueues(whatsappProcessQueues);
 
 // Config API Service
