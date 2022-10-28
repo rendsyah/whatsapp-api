@@ -2,7 +2,7 @@
 import Queue from "bull";
 
 // Interfaces
-import { IRequestReplyService } from "./whatsapp.dto";
+import { IRequestReplyService } from "./whatsapp.interface";
 
 // Commons
 import { createQueue } from "../../config/queues";
@@ -34,13 +34,17 @@ const whatsappConnectQueue = async () => {
         job.log(`Error: ${job.failedReason || job.stacktrace[0] || error}`);
     });
 
-    connectQueue.on("completed", async (job: Queue.Job, result): Promise<void> => {
+    connectQueue.on("completed", async (job: Queue.Job, result): Promise<unknown> => {
         const requestReplyService: IRequestReplyService = {
             to: job.data.sender,
             message: result?.data?.reply ?? result?.message,
             media: "",
             type: "chat",
         };
+
+        if (requestReplyService.message === "success") {
+            return "ok";
+        }
 
         await replyQueue.add("Reply Process Queue", requestReplyService, { attempts: 3, backoff: 5000, timeout: 60000 });
 

@@ -5,7 +5,7 @@ import fs from "fs";
 import appRootPath from "app-root-path";
 
 // Interfaces
-import { IRequestMediaType, IRequestMessageService, IRequestReplyService, IResponseWhatsappService } from "./whatsapp.dto";
+import { IRequestMediaType, IRequestMessageService, IRequestReplyService, IResponseWhatsappService } from "./whatsapp.interface";
 
 // Commons
 import { whatsappAuth } from "../../middlewares";
@@ -84,7 +84,7 @@ export const whatsappService = (): void => {
         }
 
         loggerDev.info("Whatsapp connection ready");
-        loggerDev.info(`Whatsapp client ${whatsappClientName} from ${whatsappClientPlatform}`);
+        loggerDev.info(`Whatsapp client connected to ${whatsappClientName} from ${whatsappClientPlatform}`);
         loggerDev.info(`Whatsapp version ${whatsappVersion}`);
     });
 
@@ -109,12 +109,8 @@ export const whatsappService = (): void => {
 
     // Whatsapp Get Connection
     whatsappClient.on("change_state", async (state): Promise<void> => {
-        if (state === "OPENING") {
+        if (state === "OPENING" || state === "PAIRING") {
             loggerDev.info("Whatsapp connection restarting...");
-        }
-
-        if (state === "PAIRING") {
-            loggerDev.info("Whatsapp connection pairing...");
             setTimeout(async () => {
                 await whatsappClient.resetState();
             }, +WHATSAPP_RESET_CONNECTION);
@@ -134,19 +130,9 @@ export const whatsappService = (): void => {
 };
 
 // Whatsapp Reply Service
-export const whatsappReplyService = async (params: IRequestReplyService): Promise<string> => {
+export const whatsappReplyService = async (params: IRequestReplyService): Promise<IResponseWhatsappService> => {
     try {
         const { to, message, media, type, image } = params;
-
-        if (!image) {
-            await whatsappClient.sendMessage(validateRequestHp(to), message, { sendSeen: true });
-        }
-
-        if (image) {
-            await whatsappClient.sendMessage(validateRequestHp(to), message, {
-                media: new MessageMedia("image/jpeg", image),
-            });
-        }
 
         await models.OutgoingLogs.create({
             from: WHATSAPP_PHONE_NUMBER,
@@ -158,7 +144,13 @@ export const whatsappReplyService = async (params: IRequestReplyService): Promis
             _status: 1,
         });
 
-        return "message sent";
+        const responseData = image
+            ? await whatsappClient.sendMessage(validateRequestHp(to), message, {
+                  media: new MessageMedia("image/jpeg", image),
+              })
+            : await whatsappClient.sendMessage(validateRequestHp(to), message, { sendSeen: true });
+
+        return { data: responseData.id };
     } catch (error) {
         throw error;
     }
@@ -169,7 +161,6 @@ export const whatsappMessageService = async (params: IRequestMessageService): Pr
     try {
         const { to, type, body } = params;
         const { message, image } = body;
-
         let filename = "";
 
         if (image) {

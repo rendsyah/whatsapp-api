@@ -2,7 +2,7 @@
 import Joi from "joi";
 
 // Interfaces
-import { IRequestMessageService } from "./whatsapp.dto";
+import { IRequestMessageService } from "./whatsapp.interface";
 
 // Whatsapp Schemas
 export const whatsappMessageSchema = Joi.object<IRequestMessageService>({

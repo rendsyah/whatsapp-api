@@ -2,7 +2,7 @@
 import { Request, Response, NextFunction } from "express";
 
 // Interfaces
-import { IRequestMessageService, IResponseWhatsappService } from "./whatsapp.dto";
+import { IRequestMessageService, IResponseWhatsappService } from "./whatsapp.interface";
 import { IRequestDataSuccess } from "../../config/lib/base.dto";
 
 // Services
