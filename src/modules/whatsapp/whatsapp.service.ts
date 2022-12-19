@@ -30,7 +30,6 @@ const WHATSAPP_SESSION_CLIENT = process.env.WHATSAPP_SESSION_CLIENT as string;
 const WHATSAPP_SESSION_PATH = process.env.WHATSAPP_SESSION_PATH as string;
 const WHATSAPP_MEDIA_PATH = process.env.WHATSAPP_MEDIA_PATH as string;
 const WHATSAPP_UPLOAD_PATH = process.env.WHATSAPP_UPLOAD_PATH as string;
-const WHATSAPP_RESET_CONNECTION = process.env.WHATSAPP_RESET_CONNECTION as string;
 
 // Whatsapp Client
 export const whatsappClient = new Client({
@@ -111,9 +110,6 @@ export const whatsappService = (): void => {
     whatsappClient.on("change_state", async (state): Promise<void> => {
         if (state === "OPENING" || state === "PAIRING") {
             loggerDev.info("Whatsapp connection restarting...");
-            setTimeout(async () => {
-                await whatsappClient.resetState();
-            }, +WHATSAPP_RESET_CONNECTION);
         }
 
         if (state === "CONNECTED") {
@@ -147,6 +143,7 @@ export const whatsappReplyService = async (params: IRequestReplyService): Promis
         const responseData = image
             ? await whatsappClient.sendMessage(validateRequestHp(to), message, {
                   media: new MessageMedia("image/jpeg", image),
+                  sendSeen: true,
               })
             : await whatsappClient.sendMessage(validateRequestHp(to), message, { sendSeen: true });
 
