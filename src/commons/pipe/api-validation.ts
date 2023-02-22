@@ -2,8 +2,11 @@
 import { ArgumentMetadata, PipeTransform } from '@nestjs/common';
 import * as Joi from 'joi';
 
+// Import Logger Service
+import { apiLoggerService } from '@commons/logger';
+
 // Import Exceptions
-import { ApiBadRequestException, ApiNotFoundException } from '../exception/api-exception';
+import { ApiBadRequestException } from '@commons/exception/api-exception';
 
 export abstract class ApiValidationPipe implements PipeTransform {
     constructor() {}
@@ -14,17 +17,11 @@ export abstract class ApiValidationPipe implements PipeTransform {
             return value;
         } catch (error) {
             const message = error.message.replace(/\"/g, '');
-            const params = error.details?.[0]?.path;
+            const params = error.details?.[0]?.path ?? [''];
 
-            if (!error.statusCode) {
-                throw new ApiBadRequestException(params, message);
-            }
-            if (error.statusCode === 400) {
-                throw new ApiBadRequestException(params, message);
-            }
-            if (error.statusCode === 404) {
-                throw new ApiNotFoundException(params, message);
-            }
+            apiLoggerService.error(`${error}`, { service: 'validation' });
+
+            throw new ApiBadRequestException(params, message);
         }
     }
 

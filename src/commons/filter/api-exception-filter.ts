@@ -2,7 +2,7 @@
 import { ExceptionFilter, Catch, ArgumentsHost, HttpException, HttpStatus } from '@nestjs/common';
 import { HttpAdapterHost } from '@nestjs/core';
 
-// Import Service
+// Import Logger Service
 import { apiLoggerService } from '../logger';
 
 @Catch()
@@ -17,7 +17,7 @@ export class ApiExceptionsFilter implements ExceptionFilter {
         const httpStatus = exception instanceof HttpException ? exception.getStatus() : HttpStatus.INTERNAL_SERVER_ERROR;
 
         if (httpStatus >= 500) {
-            apiLoggerService.error(`${exception}`, [ctxApi]);
+            apiLoggerService.error(`${exception}`, { service: ctxApi });
         }
 
         const responseServiceError = {

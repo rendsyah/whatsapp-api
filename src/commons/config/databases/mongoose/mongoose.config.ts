@@ -2,6 +2,7 @@
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { MongooseModuleAsyncOptions, MongooseModuleOptions, MongooseOptionsFactory } from '@nestjs/mongoose';
 
+// Define Mongoose Config Options
 export class MongooseConfig implements MongooseOptionsFactory {
     constructor(private readonly configService: ConfigService) {}
 
@@ -19,7 +20,7 @@ export class MongooseConfig implements MongooseOptionsFactory {
 }
 
 // Define Mongoose Config
-export const mongooseConfigAsync: MongooseModuleAsyncOptions = {
+export const MongooseConfigAsync: MongooseModuleAsyncOptions = {
     imports: [ConfigModule],
     inject: [ConfigService],
     useFactory: async (configService: ConfigService): Promise<MongooseModuleOptions> => {

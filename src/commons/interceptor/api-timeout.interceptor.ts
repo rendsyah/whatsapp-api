@@ -3,8 +3,8 @@ import { Injectable, NestInterceptor, ExecutionContext, CallHandler } from '@nes
 import { Observable, throwError, TimeoutError } from 'rxjs';
 import { catchError, timeout } from 'rxjs/operators';
 
-// Import Config
-import { ApiRequestTimeoutException } from '../exception/api-exception';
+// Import Api Exceptions
+import { ApiRequestTimeoutException } from '@commons/exception/api-exception';
 
 @Injectable()
 export class ApiTimeoutInterceptor implements NestInterceptor {

@@ -3,9 +3,9 @@ import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
 
 // Import Mongoose Config
-import { mongooseConfigAsync } from './mongoose.config';
+import { MongooseConfigAsync } from './mongoose.config';
 
 @Module({
-    imports: [MongooseModule.forRootAsync(mongooseConfigAsync)],
+    imports: [MongooseModule.forRootAsync(MongooseConfigAsync)],
 })
 export class MongooseConfigModule {}

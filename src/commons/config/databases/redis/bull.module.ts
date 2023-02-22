@@ -3,9 +3,9 @@ import { BullModule } from '@nestjs/bull';
 import { Module } from '@nestjs/common';
 
 // Import Bull Config
-import { redisConfigAsync } from './bull.config';
+import { RedisConfigAsync } from './bull.config';
 
 @Module({
-    imports: [BullModule.forRootAsync(redisConfigAsync)],
+    imports: [BullModule.forRootAsync(RedisConfigAsync)],
 })
 export class RedisConfigModule {}

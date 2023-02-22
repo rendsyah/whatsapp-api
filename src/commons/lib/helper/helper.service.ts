@@ -5,7 +5,7 @@ import * as bcrypt from 'bcrypt';
 
 @Injectable()
 export class HelperService {
-    public validateString(request: string, type: TString): string {
+    public validateString(request: string, type: TValidateString): string {
         if (!request) return '';
 
         switch (type) {
@@ -26,7 +26,7 @@ export class HelperService {
         }
     }
 
-    public validateTime(request: Date, type: TTime): string {
+    public validateTime(request: Date, type: TValidateTime): string {
         if (!dayjs(request).isValid()) return '';
 
         switch (type) {
@@ -45,8 +45,7 @@ export class HelperService {
         if (!request) return '';
 
         variables.forEach((v, i) => {
-            const variable = v;
-            request = request.replace(`{{${i + 1}}}`, variable);
+            request = request.replace(`{{${i + 1}}}`, v);
         });
 
         return request;
@@ -64,7 +63,7 @@ export class HelperService {
         return request.replace(checkNumberHp, '628') + '@c.us';
     }
 
-    public validateRandomChar(request: number, type: TRandomChar): string {
+    public validateRandomChar(request: number, type: TValidateRandomChar): string {
         if (!request) return '';
 
         let characters = '';
@@ -95,8 +94,8 @@ export class HelperService {
     public validateFilename(request: string): string {
         if (!request) return '';
 
-        const splitFilename = request.split('.');
-        const filename = splitFilename.find((v) => v.match(/\.(jpeg)/gi)) && splitFilename[splitFilename.length - 1];
+        const fileSplit = request.split('.');
+        const filename = fileSplit.find((v) => v.match(/\.(jpeg)/gi)) && fileSplit[fileSplit.length - 1];
 
         return filename;
     }

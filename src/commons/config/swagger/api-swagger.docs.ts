@@ -195,7 +195,7 @@ const ApiNotFound = () => {
                     },
                     message: {
                         type: 'string',
-                        example: 'API_VALIDATION_FAILED',
+                        example: 'API_DATA_FAILED',
                     },
                     errors: {
                         items: {

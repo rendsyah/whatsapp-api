@@ -2,6 +2,7 @@
 import { BullModuleOptions, SharedBullAsyncConfiguration, SharedBullConfigurationFactory } from '@nestjs/bull';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 
+// Define Bull Options
 export class RedisConfig implements SharedBullConfigurationFactory {
     constructor(private readonly configService: ConfigService) {}
 
@@ -16,7 +17,7 @@ export class RedisConfig implements SharedBullConfigurationFactory {
 }
 
 // Define Bull Config
-export const redisConfigAsync: SharedBullAsyncConfiguration = {
+export const RedisConfigAsync: SharedBullAsyncConfiguration = {
     imports: [ConfigModule],
     inject: [ConfigService],
     useFactory: async (configService: ConfigService): Promise<BullModuleOptions> => {

@@ -2,8 +2,9 @@
 import { apiLoggerDevelopment, apiLoggerDevelopmentService } from './api-logger.development';
 import { apiLoggerProduction, apiLoggerProductionService } from './api-logger.production';
 
-const NODE_ENV = process.env.NODE_ENV === 'development';
+// Import Constants
+import { SERVICE_ENV_DEVELOPMENT } from '@commons/constants';
 
 // Define Log Service
-export const apiLoggerService = NODE_ENV ? apiLoggerDevelopmentService : apiLoggerProductionService;
-export const apiLogger = NODE_ENV ? apiLoggerDevelopment : apiLoggerProduction;
+export const apiLoggerService = SERVICE_ENV_DEVELOPMENT ? apiLoggerDevelopmentService : apiLoggerProductionService;
+export const apiLogger = SERVICE_ENV_DEVELOPMENT ? apiLoggerDevelopment : apiLoggerProduction;

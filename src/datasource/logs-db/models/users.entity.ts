@@ -22,16 +22,11 @@ export class Users {
     status: number;
 
     @Prop({ default: 0 })
-    isLogin: number;
-
-    @Prop({ default: 0 })
     isDeleted: number;
-
-    @Prop({ default: null })
-    lastLoginAt: string;
 
     @Prop({ default: null })
     deletedAt: string;
 }
 
+// Define Users Schema
 export const UsersSchema = SchemaFactory.createForClass(Users);

@@ -1,17 +1,17 @@
 // Import Modules
 import { Injectable } from '@nestjs/common';
 
+// Import Interfaces
+import { IGetLogsDbModels } from '@datasource/interfaces/logs-db.interface';
+
 // Import Repository
 import { UsersRepository } from './repository/users.repository';
 
-// Import Interfaces
-import { IGetProjectDbModels } from '@datasource/interfaces/project-db.interface';
-
 @Injectable()
-export class ProjectDbService {
+export class LogsDbService {
     constructor(private readonly usersRepository: UsersRepository) {}
 
-    getModels(): IGetProjectDbModels {
+    getModels(): IGetLogsDbModels {
         return {
             UsersModels: this.usersRepository,
         };

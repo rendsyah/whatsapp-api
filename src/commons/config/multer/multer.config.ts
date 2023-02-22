@@ -6,24 +6,28 @@ import { diskStorage } from 'multer';
 import * as appRoot from 'app-root-path';
 
 // Import Api Exceptions
-import { ApiBadRequestException } from 'src/commons/exception/api-exception';
+import { ApiBadRequestException } from '@commons/exception/api-exception';
+
+// Import Constants
+import { SERVICE_UPLOAD_FILE_SIZE } from '@commons/constants';
 
 // Import Helper
-import { HelperConfigModule } from 'src/commons/lib/helper/helper.module';
-import { HelperService } from 'src/commons/lib/helper/helper.service';
+import { HelperConfigModule } from '@commons/lib/helper/helper.module';
+import { HelperService } from '@commons/lib/helper/helper.service';
 
+// Define Multer Options
 export class MulterConfig implements MulterOptionsFactory {
     constructor(private readonly configService: ConfigService, private helperService: HelperService) {}
 
     createMulterOptions(): MulterOptions | Promise<MulterOptions> {
-        const destinationPath = this.configService.get('app.SERVICE_UPLOAD_PATH');
+        const destination = this.configService.get('app.SERVICE_UPLOAD_PATH');
         const generateTime = this.helperService.validateTime(new Date(), 'dateformat');
         const generateChar = this.helperService.validateRandomChar(10, 'alphanumeric');
 
         return {
             storage: diskStorage({
                 destination(req, file, cb) {
-                    cb(null, `${appRoot}/..${destinationPath}`);
+                    cb(null, `${appRoot}/..${destination}`);
                 },
                 filename(req, file, cb) {
                     const fileSplit = file.originalname.split('.');
@@ -39,12 +43,13 @@ export class MulterConfig implements MulterOptionsFactory {
                 cb(null, true);
             },
             limits: {
-                fileSize: 10 * 1000 * 1000,
+                fileSize: SERVICE_UPLOAD_FILE_SIZE,
             },
         };
     }
 }
 
+// Define Multer Config
 export const multerConfigAsync: MulterModuleAsyncOptions = {
     imports: [ConfigModule, HelperConfigModule],
     inject: [ConfigService, HelperService],

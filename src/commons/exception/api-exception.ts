@@ -1,6 +1,5 @@
 // Import Modules
 import { HttpException, HttpStatus } from '@nestjs/common';
-import * as Joi from 'joi';
 
 // Define Base Bad Request Exception
 export class ApiBadRequestException extends HttpException {
@@ -65,7 +64,7 @@ export class ApiNotFoundException extends HttpException {
         super(
             {
                 statusCode: HttpStatus.NOT_FOUND,
-                message: 'API_VALIDATION_FAILED',
+                message: 'API_DATA_FAILED',
                 errors: [
                     {
                         params: params,
@@ -113,15 +112,5 @@ export class ApiInternalServerErrorException extends HttpException {
             },
             HttpStatus.INTERNAL_SERVER_ERROR,
         );
-    }
-}
-
-// Define Base Joi Validation Exception
-export class JoiValidationException extends Joi.ValidationError {
-    public statusCode: number;
-
-    constructor(path: string, message: string, statusCode: number) {
-        super(message, [{ message: '', path: [path], type: '', context: {} }], '');
-        this.statusCode = statusCode;
     }
 }

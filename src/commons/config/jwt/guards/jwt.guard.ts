@@ -3,7 +3,7 @@ import { ExecutionContext, Injectable } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 
 // Import Api Exceptions
-import { ApiUnauthorizedException } from 'src/commons/exception/api-exception';
+import { ApiUnauthorizedException } from '@commons/exception/api-exception';
 
 @Injectable()
 export class JwtAuthGuard extends AuthGuard('jwt') {

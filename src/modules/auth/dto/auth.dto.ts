@@ -1,5 +1,7 @@
+// Import Modules
 import { ApiProperty } from '@nestjs/swagger';
 
+// Define Auth Login Dto
 export class AuthLoginDto {
     @ApiProperty({ example: 'test' })
     username: string;
@@ -8,6 +10,7 @@ export class AuthLoginDto {
     password: string;
 }
 
+// Define Auth Register Dto
 export class AuthRegisterDto {
     @ApiProperty({ example: 'test' })
     username: string;
@@ -19,6 +22,7 @@ export class AuthRegisterDto {
     role: string;
 }
 
+// Define Auth Refresh Dto
 export class AuthRefreshDto {
     sub: string;
     username: string;

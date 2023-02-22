@@ -1,7 +1,8 @@
-type TString = 'char' | 'numeric' | 'emoji' | 'encode' | 'decode';
+// Define Validate String Type
+type TValidateString = 'char' | 'numeric' | 'emoji' | 'encode' | 'decode';
 
-type TTime = 'date' | 'datetime' | 'dateformat';
+// Define Validate Time Type
+type TValidateTime = 'date' | 'datetime' | 'dateformat';
 
-type TRandomChar = 'alpha' | 'numeric' | 'alphanumeric';
-
-type TEncryption = 'encrypt' | 'decrypt';
+// Define Validate Random Char Type
+type TValidateRandomChar = 'alpha' | 'numeric' | 'alphanumeric';

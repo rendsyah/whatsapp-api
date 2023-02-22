@@ -4,7 +4,7 @@ import { DocumentBuilder, OpenAPIObject, SwaggerDocumentOptions, SwaggerModule }
 
 // Define Api Swagger Config
 export const apiSwaggerConfig = (app: INestApplication): OpenAPIObject => {
-    const setDocumentApi = new DocumentBuilder()
+    const document = new DocumentBuilder()
         .setTitle('SERVICE API')
         .setDescription('SERVICE API documentation')
         .setTermsOfService('http://example.com/terms')
@@ -14,9 +14,9 @@ export const apiSwaggerConfig = (app: INestApplication): OpenAPIObject => {
         .addSecurity('authentication', { name: 'authentication', type: 'apiKey', in: 'header' })
         .build();
 
-    const optionsApi: SwaggerDocumentOptions = {
+    const options: SwaggerDocumentOptions = {
         operationIdFactory: (controllerKey: string, methodKey: string) => methodKey,
     };
 
-    return SwaggerModule.createDocument(app, setDocumentApi, optionsApi);
+    return SwaggerModule.createDocument(app, document, options);
 };
