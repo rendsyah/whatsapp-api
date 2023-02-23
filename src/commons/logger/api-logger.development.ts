@@ -17,7 +17,7 @@ const apiLoggerFormat = format.printf(({ timestamp, level, message, stack, ms, .
 
 // Define Logger Development Service
 export const apiLoggerDevelopmentService = createLogger({
-    format: format.combine(
+    format: combine(
         format.colorize(),
         format.timestamp({ format: 'DD-MM-YYYY HH:mm:ss' }),
         format.errors({ stack: true }),
