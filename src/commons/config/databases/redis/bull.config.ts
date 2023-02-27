@@ -12,6 +12,10 @@ export class RedisConfig implements SharedBullConfigurationFactory {
                 host: this.configService.get('db.SERVICE_REDIS_HOST'),
                 port: +this.configService.get('db.SERVICE_REDIS_PORT'),
             },
+            defaultJobOptions: {
+                backoff: 5,
+                timeout: 60000,
+            },
         };
     }
 }
