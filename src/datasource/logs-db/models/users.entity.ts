@@ -2,30 +2,22 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { HydratedDocument } from 'mongoose';
 
+// Import Entity
+import { ModelsBaseEntity } from './models_base.entity';
+
+// Define Users Document
 export type UsersDocument = HydratedDocument<Users>;
 
 @Schema({ collection: 'users', timestamps: true })
-export class Users {
+export class Users extends ModelsBaseEntity {
     @Prop({ unique: true, isRequired: true })
     username: string;
 
     @Prop({ isRequired: true })
     password: string;
 
-    @Prop({ default: '' })
-    hashToken: string;
-
     @Prop({ isRequired: true })
-    role: string;
-
-    @Prop({ default: 1 })
-    status: number;
-
-    @Prop({ default: 0 })
-    isDeleted: number;
-
-    @Prop({ default: null })
-    deletedAt: string;
+    name: string;
 }
 
 // Define Users Schema

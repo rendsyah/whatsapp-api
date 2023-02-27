@@ -1,22 +1,34 @@
-import { Column, Entity, PrimaryGeneratedColumn, Timestamp } from 'typeorm';
+// Import Modules
+import { Column, CreateDateColumn, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
+
+// Import Entity
+import { ModelsBaseEntity } from './models_base.entity';
+import { MasterAccess } from './master_access.entity';
 
 @Entity()
-export class Users {
-    @PrimaryGeneratedColumn({ type: 'int' })
+export class Users extends ModelsBaseEntity {
+    @PrimaryGeneratedColumn()
     id: number;
 
-    @Column({ type: 'varchar', length: 100 })
+    @ManyToOne(() => MasterAccess, (access) => access.users)
+    @JoinColumn({ name: 'access_id' })
+    access: MasterAccess;
+
+    @Column({ unique: true, type: 'varchar', length: 100 })
     username: string;
 
     @Column({ type: 'varchar', length: 100 })
     password: string;
 
-    @Column({ type: 'smallint', default: 1 })
-    status: number;
+    @Column({ type: 'varchar', length: 100 })
+    name: string;
 
-    @Column({ type: 'timestamp', default: Timestamp, select: false })
-    created_at: Date;
+    @Column({ type: 'varchar', length: 100, default: null, nullable: true })
+    hash_token: string;
 
-    @Column({ type: 'timestamp', default: Timestamp, select: false })
-    updated_at: Date;
+    @CreateDateColumn({ type: 'timestamp', default: () => 'NULL', nullable: true })
+    register_at: string;
+
+    @CreateDateColumn({ type: 'timestamp', default: () => 'NULL', nullable: true })
+    login_at: string;
 }

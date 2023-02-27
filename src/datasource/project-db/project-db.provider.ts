@@ -1,5 +1,5 @@
 // Import All Repository
-import { UsersRepository } from './repository';
+import { AccessRepository, UsersRepository } from './repository';
 
 // Define All Project DB Providers
-export const ProjectDbProviders = [UsersRepository];
+export const ProjectDbProviders = [AccessRepository, UsersRepository];
