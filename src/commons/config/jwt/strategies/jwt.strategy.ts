@@ -6,27 +6,22 @@ import { ConfigService } from '@nestjs/config';
 import { Request } from 'express';
 
 // Import Interfaces
-import { IPayload } from './interfaces/jwt.interface';
+import { IAuthTokens } from '@modules/auth/interfaces/auth.interface';
 
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
     constructor(configService: ConfigService) {
         super({
-            jwtFromRequest: ExtractJwt.fromExtractors([
-                (request: Request) => {
-                    return request.headers?.authentication?.toString() || null;
-                },
-            ]),
+            jwtFromRequest: ExtractJwt.fromExtractors([(request: Request) => request.headers?.authorization]),
             ignoreExpiration: false,
             secretOrKey: configService.get('app.SERVICE_JWT_SECRET_KEY'),
         });
     }
 
-    async validate(payload: IPayload) {
+    async validate(payload: IAuthTokens) {
         return {
             userId: payload.sub,
             username: payload.username,
-            role: payload.role,
         };
     }
 }
