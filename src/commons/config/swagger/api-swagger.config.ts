@@ -11,7 +11,7 @@ export const apiSwaggerConfig = (app: INestApplication): OpenAPIObject => {
         .setContact('Developer', 'http://www.example.com/support', 'example@gmail.com')
         .setVersion('1.0')
         .setLicense('Apache 2.0', 'https://www.apache.org/licenses/LICENSE-2.0.html')
-        .addSecurity('authentication', { name: 'authentication', type: 'apiKey', in: 'header' })
+        .addSecurity('authorization', { name: 'authorization', type: 'apiKey', in: 'header' })
         .build();
 
     const options: SwaggerDocumentOptions = {
