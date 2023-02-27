@@ -35,7 +35,7 @@ export class AuthRegisterSchema extends ApiValidationPipe {
                 .required()
                 .messages({ 'string.pattern.base': 'username must be alphanumeric' }),
             password: Joi.string().required(),
-            role: Joi.string().valid('user', 'admin').required(),
+            name: Joi.string().required(),
         });
     }
 }

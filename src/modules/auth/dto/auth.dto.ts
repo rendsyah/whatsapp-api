@@ -18,14 +18,13 @@ export class AuthRegisterDto {
     @ApiProperty({ example: '123' })
     password: string;
 
-    @ApiProperty({ example: 'user' })
-    role: string;
+    @ApiProperty({ example: 'test' })
+    name: string;
 }
 
-// Define Auth Refresh Dto
-export class AuthRefreshDto {
-    sub: string;
+// Define Auth Users Dto
+export class AuthUsersDto {
+    userId: number;
     username: string;
-    role: string;
-    refreshToken: string;
+    refreshToken?: string;
 }

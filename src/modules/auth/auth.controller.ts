@@ -6,16 +6,12 @@ import { ApiSecurity, ApiTags } from '@nestjs/swagger';
 import { AuthLoginSchema, AuthRegisterSchema } from './auth.pipe';
 
 // Import Commons
-import { JwtAuthGuard, JwtRefreshAuthGuard, RolesAuthGuard } from '@commons/config/jwt/guards';
+import { JwtAuthGuard, JwtRefreshAuthGuard } from '@commons/config/jwt/guards';
 import { ApiGetServiceDocs, ApiPostServiceDocs } from '@commons/config/swagger/api-swagger.docs';
-import { Roles } from '@commons/decorator/role.decorator';
 import { User } from '@commons/decorator/user.decorator';
 
 // Import Dto
-import { AuthLoginDto, AuthRefreshDto, AuthRegisterDto } from './dto/auth.dto';
-
-// Import Interfaces
-import { IRole } from '@commons/decorator/interfaces';
+import { AuthLoginDto, AuthRegisterDto, AuthUsersDto } from './dto/auth.dto';
 
 // Import Service
 import { AuthService } from './auth.service';
@@ -31,20 +27,27 @@ export class AuthController {
         return await this.authService.authLogin(dto);
     }
 
-    @Roles(IRole.Admin)
-    @UseGuards(JwtAuthGuard, RolesAuthGuard)
+    @UseGuards(JwtAuthGuard)
     @Post('register')
-    @ApiSecurity('authentication')
+    @ApiSecurity('authorization')
     @ApiPostServiceDocs(AuthRegisterDto, 'register')
     async authRegister(@Body(AuthRegisterSchema) dto: AuthRegisterDto) {
         return await this.authService.authRegister(dto);
     }
 
+    // @UseGuards(JwtAuthGuard)
+    @Get('logout')
+    // @ApiSecurity('authorization')
+    @ApiGetServiceDocs('logout')
+    async authLogout(@User() dto: AuthUsersDto) {
+        return await this.authService.authLogout(dto);
+    }
+
     @UseGuards(JwtRefreshAuthGuard)
     @Get('refresh')
-    @ApiSecurity('authentication')
+    @ApiSecurity('authorization')
     @ApiGetServiceDocs('refresh token')
-    async authRefresh(@User() dto: AuthRefreshDto) {
+    async authRefresh(@User() dto: AuthUsersDto) {
         return await this.authService.authRefresh(dto);
     }
 }

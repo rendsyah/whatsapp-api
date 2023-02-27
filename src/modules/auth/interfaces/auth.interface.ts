@@ -1,8 +1,7 @@
 // Define Auth Tokens Interface
 export interface IAuthTokens {
-    sub: string;
+    sub: number;
     username: string;
-    role: string;
 }
 
 // Define Auth Response Interface
