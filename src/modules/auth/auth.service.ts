@@ -99,9 +99,7 @@ export class AuthService {
 
     async authLogout(dto: AuthUsersDto): Promise<IAuthResponse> {
         await this.projectDbModels.UsersModels.update({ id: dto.userId }, { hash_token: null, login_at: null });
-        return {
-            message: 'successfully logout',
-        };
+        return { message: 'successfully logout' };
     }
 
     async authRefresh(dto: AuthUsersDto): Promise<IAuthResponse> {
@@ -114,8 +112,6 @@ export class AuthService {
 
         const getToken = await this._authToken({ sub: getUser.id, username: getUser.username });
 
-        return {
-            access_token: getToken,
-        };
+        return { access_token: getToken };
     }
 }

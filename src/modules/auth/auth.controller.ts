@@ -22,7 +22,7 @@ export class AuthController {
     constructor(private readonly authService: AuthService) {}
 
     @Post('login')
-    @ApiPostServiceDocs(AuthLoginDto, 'login')
+    @ApiPostServiceDocs('login', AuthLoginDto)
     async authLogin(@Body(AuthLoginSchema) dto: AuthLoginDto) {
         return await this.authService.authLogin(dto);
     }
@@ -30,14 +30,14 @@ export class AuthController {
     @UseGuards(JwtAuthGuard)
     @Post('register')
     @ApiSecurity('authorization')
-    @ApiPostServiceDocs(AuthRegisterDto, 'register')
+    @ApiPostServiceDocs('register', AuthRegisterDto)
     async authRegister(@Body(AuthRegisterSchema) dto: AuthRegisterDto) {
         return await this.authService.authRegister(dto);
     }
 
-    // @UseGuards(JwtAuthGuard)
+    @UseGuards(JwtAuthGuard)
     @Get('logout')
-    // @ApiSecurity('authorization')
+    @ApiSecurity('authorization')
     @ApiGetServiceDocs('logout')
     async authLogout(@User() dto: AuthUsersDto) {
         return await this.authService.authLogout(dto);
