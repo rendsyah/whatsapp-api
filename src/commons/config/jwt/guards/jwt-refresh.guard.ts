@@ -9,7 +9,7 @@ import { ApiUnauthorizedException } from '@commons/exception/api-exception';
 export class JwtRefreshAuthGuard extends AuthGuard('jwt-refresh') {
     handleRequest(error: any, user: any, context: ExecutionContext) {
         if (error || !user) {
-            throw error || new ApiUnauthorizedException('invalid refresh token');
+            throw error || new ApiUnauthorizedException('invalid token');
         }
 
         return user;
