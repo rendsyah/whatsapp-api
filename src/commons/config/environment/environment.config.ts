@@ -3,7 +3,7 @@ import * as Joi from 'joi';
 
 // Define All Schema Config
 export const environmentConfigSchema = Joi.object({
-    NODE_ENV: Joi.string().required(),
+    SERVICE_NODE_ENV: Joi.string().required(),
     SERVICE_PORT: Joi.number().required(),
     SERVICE_NAME: Joi.string().required(),
     SERVICE_PREFIX: Joi.string().required(),
@@ -26,4 +26,7 @@ export const environmentConfigSchema = Joi.object({
     SERVICE_JWT_EXPIRES_IN: Joi.string().required(),
     SERVICE_JWT_REFRESH_SECRET_KEY: Joi.string().required(),
     SERVICE_JWT_REFRESH_EXPIRES_IN: Joi.string().required(),
+    SERVICE_CRYPTO_ALGORITHM: Joi.string().allow(''),
+    SERVICE_CRYPTO_SECRET_KEY: Joi.string().allow(''),
+    SERVICE_UPLOAD_PATH: Joi.string().allow(''),
 });
