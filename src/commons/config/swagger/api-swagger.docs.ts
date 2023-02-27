@@ -19,7 +19,7 @@ export const ApiDocsOperation = (params: string) => {
 };
 
 // Define Api Documentation Body
-const ApiDocsBody = <TModel extends Type<any>>(model: TModel, params: string) => {
+const ApiDocsBody = <TModel extends Type<any>>(params: string, model: TModel) => {
     return applyDecorators(ApiBody({ description: `Request body for ${params}`, type: model }));
 };
 
@@ -306,10 +306,10 @@ export const ApiGetServiceDocs = (params: string) => {
 };
 
 // Define Base Api Post Documentation
-export const ApiPostServiceDocs = <TModel extends Type<any>>(model: TModel, params: string) => {
+export const ApiPostServiceDocs = <TModel extends Type<any>>(params: string, model: TModel) => {
     return applyDecorators(
         ApiDocsOperation(params),
-        ApiDocsBody(model, params),
+        ApiDocsBody(params, model),
         ApiCreated(),
         ApiBadRequest(),
         ApiUnauthorized(),
