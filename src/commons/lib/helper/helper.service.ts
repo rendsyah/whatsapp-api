@@ -1,10 +1,21 @@
 // Import Modules
 import { Injectable } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
+import { createCipheriv, createDecipheriv, createHash, randomBytes } from 'crypto';
 import * as dayjs from 'dayjs';
 import * as bcrypt from 'bcrypt';
 
 @Injectable()
 export class HelperService {
+    private cryptoAlgorithm = this.configService.get('app.SERVICE_CRYPTO_ALGORITHM');
+    private cryptoIv = randomBytes(16);
+    private cryptoSecret = createHash('sha256')
+        .update(this.configService.get('app.SERVICE_CRYPTO_SECRET_KEY'))
+        .digest('base64')
+        .substring(0, 32);
+
+    constructor(private readonly configService: ConfigService) {}
+
     public validateString(request: string, type: TValidateString): string {
         if (!request) return '';
 
@@ -98,6 +109,22 @@ export class HelperService {
         const filename = fileSplit.find((v) => v.match(/\.(jpeg)/gi)) && fileSplit[fileSplit.length - 1];
 
         return filename;
+    }
+
+    public validateEncrypt(request: string) {
+        const cipher = createCipheriv(this.cryptoAlgorithm, this.cryptoSecret, this.cryptoIv);
+        const encrypted = cipher.update(request, 'utf8', 'hex');
+        const result = encrypted + cipher.final('hex');
+
+        return result;
+    }
+
+    public validateDecrypt(request: string) {
+        const decipher = createDecipheriv(this.cryptoAlgorithm, this.cryptoSecret, this.cryptoIv);
+        const decrypted = decipher.update(request, 'hex', 'utf8');
+        const result = decrypted + decipher.final('utf8');
+
+        return result;
     }
 
     public async validateHash(request: string): Promise<string> {
