@@ -1,8 +1,8 @@
-// Modules
+// Import Modules
 import { Controller, Get } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 
-// Service
+// Import Service
 import { AppService } from './app.service';
 
 @ApiTags('Welcome')
