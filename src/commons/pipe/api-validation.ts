@@ -5,7 +5,7 @@ import * as Joi from 'joi';
 // Import Logger Service
 import { apiLoggerService } from '@commons/logger';
 
-// Import Exceptions
+// Import Api Exceptions
 import { ApiBadRequestException } from '@commons/exception/api-exception';
 
 export abstract class ApiValidationPipe implements PipeTransform {
