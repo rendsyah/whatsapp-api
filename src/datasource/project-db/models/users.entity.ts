@@ -1,12 +1,11 @@
 // Import Modules
-import { Column, CreateDateColumn, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
+import { Column, CreateDateColumn, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn, UpdateDateColumn } from 'typeorm';
 
 // Import Entity
-import { ModelsBaseEntity } from './models_base.entity';
 import { MasterAccess } from './master_access.entity';
 
 @Entity()
-export class Users extends ModelsBaseEntity {
+export class Users {
     @PrimaryGeneratedColumn()
     id: number;
 
@@ -31,4 +30,19 @@ export class Users extends ModelsBaseEntity {
 
     @CreateDateColumn({ type: 'timestamp', default: () => 'NULL', nullable: true })
     login_at: string;
+
+    @Column({ type: 'smallint', default: 1 })
+    status: number;
+
+    @Column({ type: 'smallint', default: 0 })
+    is_deleted: number;
+
+    @CreateDateColumn({ type: 'timestamp', default: () => 'NULL', nullable: true })
+    deleted_at: Date;
+
+    @CreateDateColumn({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP(6)' })
+    created_at: Date;
+
+    @UpdateDateColumn({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP(6)', onUpdate: 'CURRENT_TIMESTAMP(6)' })
+    updated_at: Date;
 }
