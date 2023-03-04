@@ -30,9 +30,7 @@ export class AuthController {
         return await this.authService.authLogin(dto);
     }
 
-    @UseGuards(JwtAuthGuard)
     @Post('register')
-    @ApiSecurity('authorization')
     @ApiPostServiceDocs('register', AuthRegisterDto)
     async authRegisterController(@Body(AuthRegisterSchema) dto: AuthRegisterDto): Promise<IAuthResponse> {
         return await this.authService.authRegister(dto);
