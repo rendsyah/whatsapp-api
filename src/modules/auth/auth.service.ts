@@ -50,21 +50,18 @@ export class AuthService {
 
     async authLogin(dto: AuthLoginDto): Promise<IAuthResponse> {
         const getUser = await this.projectDbModels.UsersModels.findOne({ where: { username: dto.username } });
-        const getMatching = await this.helperService.validateCompare(dto.password, getUser?.password);
+        const getMatching = await this.helperService.validateCompare(dto.password, getUser?.password || '');
 
         if (!getMatching) {
             throw new ApiBadRequestException(['username', 'password'], 'username or password invalid');
         }
 
-        const requestPayloadToken = {
+        const getDataToken = {
             sub: getUser.id,
             username: getUser.username,
         };
 
-        const [getToken, getRefreshToken] = await Promise.all([
-            this._authToken(requestPayloadToken),
-            this._authRefreshToken(requestPayloadToken),
-        ]);
+        const [getToken, getRefreshToken] = await Promise.all([this._authToken(getDataToken), this._authRefreshToken(getDataToken)]);
 
         if (!getToken || !getRefreshToken) {
             throw new Error('process token failed');
