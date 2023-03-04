@@ -26,6 +26,8 @@ export const environmentSchema = Joi.object({
     SERVICE_JWT_EXPIRES_IN: Joi.string().required(),
     SERVICE_JWT_REFRESH_SECRET_KEY: Joi.string().required(),
     SERVICE_JWT_REFRESH_EXPIRES_IN: Joi.string().required(),
+    SERVICE_LIMITER_TTL: Joi.number().allow(''),
+    SERVICE_LIMITER_LIMIT: Joi.number().allow(''),
     SERVICE_CRYPTO_ALGORITHM: Joi.string().allow(''),
     SERVICE_CRYPTO_SECRET_KEY: Joi.string().allow(''),
     SERVICE_UPLOAD_PATH: Joi.string().allow(''),
