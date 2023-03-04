@@ -1,19 +1,12 @@
 // Import Modules
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { createCipheriv, createDecipheriv, createHash, randomBytes } from 'crypto';
+import { createCipheriv, createDecipheriv, randomBytes } from 'crypto';
 import * as dayjs from 'dayjs';
 import * as bcrypt from 'bcrypt';
 
 @Injectable()
 export class HelperService {
-    private cryptoAlgorithm = this.configService.get('app.SERVICE_CRYPTO_ALGORITHM');
-    private cryptoIv = randomBytes(16);
-    private cryptoSecret = createHash('sha256')
-        .update(this.configService.get('app.SERVICE_CRYPTO_SECRET_KEY'))
-        .digest('base64')
-        .substring(0, 32);
-
     constructor(private readonly configService: ConfigService) {}
 
     public validateString(request: string, type: TValidateString): string {
@@ -102,29 +95,30 @@ export class HelperService {
         return charactersResult.toUpperCase();
     }
 
-    public validateFilename(request: string): string {
-        if (!request) return '';
+    public validateEncrypt(request: string): string {
+        const cryptoIv = Buffer.from(randomBytes(16)).toString('hex').substring(0, 16);
+        const cipher = createCipheriv(
+            this.configService.get('app.SERVICE_CRYPTO_ALGORITHM'),
+            this.configService.get('app.SERVICE_CRYPTO_SECRET_KEY'),
+            cryptoIv,
+        );
+        const encrypted = Buffer.concat([cipher.update(request), cipher.final()]).toString('base64');
 
-        const fileSplit = request.split('.');
-        const filename = fileSplit.find((v) => v.match(/\.(jpeg)/gi)) && fileSplit[fileSplit.length - 1];
-
-        return filename;
+        return cryptoIv + ':' + encrypted;
     }
 
-    public validateEncrypt(request: string) {
-        const cipher = createCipheriv(this.cryptoAlgorithm, this.cryptoSecret, this.cryptoIv);
-        const encrypted = cipher.update(request, 'utf8', 'hex');
-        const result = encrypted + cipher.final('hex');
+    public validateDecrypt(request: string): string {
+        const splitRequest = request.split(':');
+        const cryptoIv = Buffer.from(splitRequest.shift(), 'binary');
+        const encryptedText = Buffer.from(splitRequest.join(':'), 'base64');
+        const decipher = createDecipheriv(
+            this.configService.get('app.SERVICE_CRYPTO_ALGORITHM'),
+            this.configService.get('app.SERVICE_CRYPTO_SECRET_KEY'),
+            cryptoIv,
+        );
+        const decrypted = Buffer.concat([decipher.update(encryptedText), decipher.final()]).toString();
 
-        return result;
-    }
-
-    public validateDecrypt(request: string) {
-        const decipher = createDecipheriv(this.cryptoAlgorithm, this.cryptoSecret, this.cryptoIv);
-        const decrypted = decipher.update(request, 'hex', 'utf8');
-        const result = decrypted + decipher.final('utf8');
-
-        return result;
+        return decrypted;
     }
 
     public async validateHash(request: string): Promise<string> {
