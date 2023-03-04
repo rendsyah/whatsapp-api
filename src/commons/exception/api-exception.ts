@@ -96,6 +96,25 @@ export class ApiRequestTimeoutException extends HttpException {
     }
 }
 
+// Define Base Too Many Request Exception
+export class ApiTooManyRequestException extends HttpException {
+    constructor(detail: string) {
+        super(
+            {
+                statusCode: HttpStatus.TOO_MANY_REQUESTS,
+                message: 'API_TO_MANY_REQUESTS',
+                errors: [
+                    {
+                        params: ['requests'],
+                        detail: detail,
+                    },
+                ],
+            },
+            HttpStatus.TOO_MANY_REQUESTS,
+        );
+    }
+}
+
 // Define Base Internal Server Error Exception
 export class ApiInternalServerErrorException extends HttpException {
     constructor(path: string) {

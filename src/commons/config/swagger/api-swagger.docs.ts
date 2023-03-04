@@ -10,6 +10,7 @@ import {
     ApiOkResponse,
     ApiOperation,
     ApiRequestTimeoutResponse,
+    ApiTooManyRequestsResponse,
     ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
 
@@ -256,6 +257,43 @@ const ApiRequestTimeout = () => {
     );
 };
 
+// Define Api Too Many Requests Response Sample
+const ApiTooManyRequests = () => {
+    return applyDecorators(
+        ApiTooManyRequestsResponse({
+            description: 'Too Many Requests',
+            schema: {
+                properties: {
+                    statusCode: {
+                        type: 'number',
+                        example: 429,
+                    },
+                    message: {
+                        type: 'string',
+                        example: 'API_TO_MANY_REQUESTS',
+                    },
+                    errors: {
+                        items: {
+                            properties: {
+                                params: {
+                                    items: {
+                                        type: 'string',
+                                        example: 'requests',
+                                    },
+                                },
+                                detail: {
+                                    type: 'string',
+                                    example: 'too many requests',
+                                },
+                            },
+                        },
+                    },
+                },
+            },
+        }),
+    );
+};
+
 // Define Api Internal Server Error Response Sample
 const ApiInternalServerError = () => {
     return applyDecorators(
@@ -301,6 +339,7 @@ export const ApiGetServiceDocs = (params: string) => {
         ApiForbidden(),
         ApiNotFound(),
         ApiRequestTimeout(),
+        ApiTooManyRequests(),
         ApiInternalServerError(),
     );
 };
@@ -316,6 +355,7 @@ export const ApiPostServiceDocs = <TModel extends Type<any>>(params: string, mod
         ApiForbidden(),
         ApiNotFound(),
         ApiRequestTimeout(),
+        ApiTooManyRequests(),
         ApiInternalServerError(),
     );
 };
