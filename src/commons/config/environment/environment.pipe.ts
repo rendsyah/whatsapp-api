@@ -1,8 +1,8 @@
 // Import Modules
 import * as Joi from 'joi';
 
-// Define All Schema Config
-export const environmentConfigSchema = Joi.object({
+// Define All Environment Schema
+export const environmentSchema = Joi.object({
     SERVICE_NODE_ENV: Joi.string().required(),
     SERVICE_PORT: Joi.number().required(),
     SERVICE_NAME: Joi.string().required(),

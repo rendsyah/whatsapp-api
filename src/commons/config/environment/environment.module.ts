@@ -3,7 +3,7 @@ import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 
 // Import Environment Config
-import { environmentConfigSchema } from './environment.config';
+import { environmentSchema } from './environment.pipe';
 import config from './config';
 
 @Module({
@@ -11,7 +11,7 @@ import config from './config';
         ConfigModule.forRoot({
             isGlobal: true,
             cache: true,
-            validationSchema: environmentConfigSchema,
+            validationSchema: environmentSchema,
             load: config,
         }),
     ],
