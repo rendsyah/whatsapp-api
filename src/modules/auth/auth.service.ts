@@ -56,12 +56,15 @@ export class AuthService {
             throw new ApiBadRequestException(['username', 'password'], 'username or password invalid');
         }
 
-        const getDataToken = {
+        const getRequestDataToken = {
             sub: getUser.id,
             username: getUser.username,
         };
 
-        const [getToken, getRefreshToken] = await Promise.all([this._authToken(getDataToken), this._authRefreshToken(getDataToken)]);
+        const [getToken, getRefreshToken] = await Promise.all([
+            this._authToken(getRequestDataToken),
+            this._authRefreshToken(getRequestDataToken),
+        ]);
 
         if (!getToken || !getRefreshToken) {
             throw new Error('process token failed');
