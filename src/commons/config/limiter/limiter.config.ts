@@ -6,7 +6,7 @@ import { ThrottlerAsyncOptions, ThrottlerModuleOptions, ThrottlerOptionsFactory 
 export class LimiterConfig implements ThrottlerOptionsFactory {
     constructor(private readonly configService: ConfigService) {}
 
-    public createThrottlerOptions(): ThrottlerModuleOptions {
+    createThrottlerOptions(): ThrottlerModuleOptions {
         return {
             ttl: +this.configService.get('app.SERVICE_LIMITER_TTL'),
             limit: +this.configService.get('app.SERVICE_LIMITER_LIMIT'),
