@@ -19,8 +19,7 @@ export abstract class ApiValidationPipe implements PipeTransform {
             const message = error.message.replace(/\"/g, '');
             const params = error.details?.[0]?.path ?? [''];
 
-            apiLoggerService.error(`${error}`, { service: 'validation' });
-
+            apiLoggerService.error(`${error}`, { service: 'middleware' });
             throw new ApiBadRequestException(params, message);
         }
     }
