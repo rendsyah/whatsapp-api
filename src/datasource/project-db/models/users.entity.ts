@@ -25,7 +25,7 @@ export class Users {
     @Column({ type: 'varchar', length: 100, default: null, nullable: true })
     hash_token: string;
 
-    @CreateDateColumn({ type: 'timestamp', default: () => 'NULL', nullable: true })
+    @CreateDateColumn({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP(6)' })
     register_at: string;
 
     @CreateDateColumn({ type: 'timestamp', default: () => 'NULL', nullable: true })
