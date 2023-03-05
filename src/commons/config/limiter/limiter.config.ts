@@ -8,8 +8,8 @@ export class LimiterConfig implements ThrottlerOptionsFactory {
 
     public createThrottlerOptions(): ThrottlerModuleOptions {
         return {
-            ttl: +this.configService.get('app.SERVICE_LIMITER_TTL'),
-            limit: +this.configService.get('app.SERVICE_LIMITER_LIMIT'),
+            ttl: +this.configService.get<string>('app.SERVICE_LIMITER_TTL'),
+            limit: +this.configService.get<string>('app.SERVICE_LIMITER_LIMIT'),
         };
     }
 }
