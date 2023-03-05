@@ -13,7 +13,7 @@ export abstract class ApiValidationPipe implements PipeTransform {
 
     public async transform(value: unknown, metadata: ArgumentMetadata): Promise<unknown> {
         try {
-            await this.buildSchema().validateAsync(value, { abortEarly: false });
+            await this.buildSchema().validateAsync(value);
             return value;
         } catch (error) {
             const message = error.message.replace(/\"/g, '');

@@ -19,7 +19,7 @@ import { HelperService } from '@commons/lib/helper/helper.service';
 export class MulterConfig implements MulterOptionsFactory {
     constructor(private readonly configService: ConfigService, private helperService: HelperService) {}
 
-    createMulterOptions(): MulterOptions | Promise<MulterOptions> {
+    public createMulterOptions(): MulterOptions | Promise<MulterOptions> {
         const destination = this.configService.get('app.SERVICE_UPLOAD_PATH');
         const generateTime = this.helperService.validateTime(new Date(), 'dateformat');
         const generateChar = this.helperService.validateRandomChar(10, 'alphanumeric');

@@ -4,7 +4,7 @@ import { JwtModuleAsyncOptions, JwtModuleOptions, JwtOptionsFactory } from '@nes
 
 // Define JWT Options
 export class JwtConfig implements JwtOptionsFactory {
-    createJwtOptions(): JwtModuleOptions {
+    public createJwtOptions(): JwtModuleOptions {
         return {};
     }
 }

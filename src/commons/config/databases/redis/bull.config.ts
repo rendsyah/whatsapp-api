@@ -6,7 +6,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 export class RedisConfig implements SharedBullConfigurationFactory {
     constructor(private readonly configService: ConfigService) {}
 
-    createSharedConfiguration(): BullModuleOptions {
+    public createSharedConfiguration(): BullModuleOptions {
         return {
             redis: {
                 host: this.configService.get('db.SERVICE_REDIS_HOST'),
