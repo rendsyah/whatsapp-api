@@ -36,4 +36,9 @@ export const apiLoggerDevelopment: expressWinston.LoggerOptions = {
     level: (req: Request, res: Response) => {
         return res.statusCode >= 400 ? 'error' : 'info';
     },
+    ignoreRoute: (req: Request, res: Response) => {
+        if (req.path.includes('/api/docs')) {
+            return true;
+        }
+    },
 };

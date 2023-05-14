@@ -2,8 +2,8 @@
 import { SetMetadata } from '@nestjs/common';
 
 // Import Interfaces
-import { IRole } from './interfaces';
+import { RoleEnum } from './interfaces';
 
 // Define Roles Decorator
 export const ROLES_KEY = 'roles';
-export const Roles = (...roles: IRole[]) => SetMetadata(ROLES_KEY, roles);
+export const Roles = (...roles: RoleEnum[]) => SetMetadata(ROLES_KEY, roles);

@@ -22,14 +22,14 @@ export class ApiBadRequestException extends HttpException {
 
 // Define Base Unauthorized Exception
 export class ApiUnauthorizedException extends HttpException {
-    constructor(detail: string) {
+    constructor(params: string[], detail: string) {
         super(
             {
                 statusCode: HttpStatus.UNAUTHORIZED,
                 message: 'API_UNAUTHORIZED_FAILED',
                 errors: [
                     {
-                        params: ['token'],
+                        params: params,
                         detail: detail,
                     },
                 ],
@@ -41,14 +41,14 @@ export class ApiUnauthorizedException extends HttpException {
 
 // Define Base Forbidden Exception
 export class ApiForbiddenException extends HttpException {
-    constructor(detail: string) {
+    constructor(params: string[], detail: string) {
         super(
             {
                 statusCode: HttpStatus.FORBIDDEN,
                 message: 'API_ACCESS_FAILED',
                 errors: [
                     {
-                        params: ['role'],
+                        params: params,
                         detail: detail,
                     },
                 ],

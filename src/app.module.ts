@@ -3,9 +3,9 @@ import { Module } from '@nestjs/common';
 import { APP_FILTER, APP_INTERCEPTOR } from '@nestjs/core';
 
 // Import Commons
-import { EnvironmentConfigModule } from '@commons/config/environment/environment.module';
+import { ConfigurationConfigModule } from '@commons/config/configuration/configuration.module';
+import { BullConfigModule } from '@commons/config/bull/bull.module';
 import { MongooseConfigModule } from '@commons/config/databases/mongoose/mongoose.module';
-import { RedisConfigModule } from '@commons/config/databases/redis/bull.module';
 import { TypeOrmConfigModule } from '@commons/config/databases/typeorm/typeorm.module';
 import { LimiterConfigModule } from '@commons/config/limiter/limiter.module';
 import { StaticConfigModule } from '@commons/config/static/static.module';
@@ -15,22 +15,21 @@ import { ApiTransformInterceptor } from '@commons/interceptor/api-transform.inte
 import { ApiExceptionsFilter } from '@commons/filter/api-exception-filter';
 
 // Import All Service Modules
-import { AuthModule } from '@modules/auth/auth.module';
 
 // Import Service
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 
+// Define App Module
 @Module({
     imports: [
-        EnvironmentConfigModule,
+        ConfigurationConfigModule,
+        BullConfigModule,
         MongooseConfigModule,
-        RedisConfigModule,
         TypeOrmConfigModule,
         LimiterConfigModule,
         StaticConfigModule,
         HelperConfigModule,
-        AuthModule,
     ],
     controllers: [AppController],
     providers: [
@@ -40,4 +39,6 @@ import { AppService } from './app.service';
         AppService,
     ],
 })
+
+// Export App Module
 export class AppModule {}

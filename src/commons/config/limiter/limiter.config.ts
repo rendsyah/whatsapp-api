@@ -1,6 +1,7 @@
 // Import Modules
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { ThrottlerAsyncOptions, ThrottlerModuleOptions, ThrottlerOptionsFactory } from '@nestjs/throttler';
+import { ThrottlerStorageRedisService } from 'nestjs-throttler-storage-redis';
 
 // Define Limiter Options
 export class LimiterConfig implements ThrottlerOptionsFactory {
@@ -10,6 +11,10 @@ export class LimiterConfig implements ThrottlerOptionsFactory {
         return {
             ttl: +this.configService.get<string>('app.SERVICE_LIMITER_TTL'),
             limit: +this.configService.get<string>('app.SERVICE_LIMITER_LIMIT'),
+            storage: new ThrottlerStorageRedisService({
+                host: this.configService.get<string>('db.SERVICE_REDIS_HOST'),
+                port: +this.configService.get<string>('db.SERVICE_REDIS_PORT'),
+            }),
         };
     }
 }

@@ -25,4 +25,8 @@ export abstract class BaseRepository<T> {
     async delete(entityFilterQuery: FindOptionsWhere<T>): Promise<DeleteResult> {
         return this.entityModels.delete(entityFilterQuery);
     }
+
+    async count(entityFilterQuery?: FindManyOptions<T>): Promise<number> {
+        return this.entityModels.count(entityFilterQuery);
+    }
 }

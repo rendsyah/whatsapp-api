@@ -1,13 +1,10 @@
 // Import Modules
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModuleAsyncOptions, TypeOrmModuleOptions, TypeOrmOptionsFactory } from '@nestjs/typeorm';
-import { writeFileSync } from 'fs';
 
 // Define Typeorm Options
 export class TypeOrmConfig implements TypeOrmOptionsFactory {
-    constructor(private configService: ConfigService) {
-        writeFileSync('datasource.config.json', JSON.stringify(this.createTypeOrmOptions(), null, 4));
-    }
+    constructor(private configService: ConfigService) {}
 
     public createTypeOrmOptions(): TypeOrmModuleOptions {
         return {
@@ -17,7 +14,8 @@ export class TypeOrmConfig implements TypeOrmOptionsFactory {
             username: this.configService.get<string>('db.SERVICE_DB_USER'),
             password: this.configService.get<string>('db.SERVICE_DB_PASS'),
             database: this.configService.get<string>('db.SERVICE_DB_NAME'),
-            synchronize: false,
+            synchronize: false, // for production set to false and use migration
+            logging: false, // for production set to false
             connectTimeout: 60000,
             entities: [this.configService.get<string>('db.SERVICE_DB_ENTITIES')],
             migrations: [this.configService.get<string>('db.SERVICE_DB_MIGRATIONS')],

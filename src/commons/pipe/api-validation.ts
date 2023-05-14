@@ -16,11 +16,11 @@ export abstract class ApiValidationPipe implements PipeTransform {
             await this.buildSchema().validateAsync(value);
             return value;
         } catch (error) {
-            const message = error.message.replace(/\"/g, '');
-            const params = error.details?.[0]?.path ?? [''];
+            const getMessage = error.message.replace(/\"/g, '');
+            const getParams = error.details?.[0]?.path ?? [''];
 
-            apiLoggerService.error(`${error}`, { service: 'middleware' });
-            throw new ApiBadRequestException(params, message);
+            apiLoggerService.error(`${error}`, { service: 'validation-middleware' });
+            throw new ApiBadRequestException(getParams, getMessage);
         }
     }
 

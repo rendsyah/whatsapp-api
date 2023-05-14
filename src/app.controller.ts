@@ -10,6 +10,11 @@ import { AppService } from './app.service';
 export class AppController {
     constructor(private readonly appService: AppService) {}
 
+    /**
+     * Handle to get welcome message controller
+     * @controller
+     * @returns Promise<string>
+     */
     @Get('welcome')
     async getWelcomeController(): Promise<string> {
         return await this.appService.getWelcome();

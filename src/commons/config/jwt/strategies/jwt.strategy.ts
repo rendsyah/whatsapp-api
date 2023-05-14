@@ -3,25 +3,46 @@ import { ExtractJwt, Strategy } from 'passport-jwt';
 import { PassportStrategy } from '@nestjs/passport';
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { Request } from 'express';
+
+// Import Commons
+import { ApiUnauthorizedException } from '@commons/exception/api-exception';
+
+// Import Datasource
+import { ProjectDbService } from '@datasource/project-db/project-db.service';
 
 // Import Interfaces
-import { IAuthTokens, IResultAuthTokens } from '@modules/auth/interfaces/auth.interface';
+// import { IAuthToken, IAuthTokenResponse } from '@modules/mobile/auth/interfaces/auth.interface';
+import { IProjectDbModels } from '@datasource/interfaces/project-db.interface';
 
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
-    constructor(configService: ConfigService) {
+    private projectDbModels: IProjectDbModels;
+
+    constructor(configService: ConfigService, private readonly projectDbService: ProjectDbService) {
         super({
-            jwtFromRequest: ExtractJwt.fromExtractors([(request: Request) => request.headers?.authorization]),
+            jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
             ignoreExpiration: false,
             secretOrKey: configService.get('app.SERVICE_JWT_SECRET_KEY'),
         });
+        this.projectDbModels = this.projectDbService.getModels();
     }
 
-    async validate(payload: IAuthTokens): Promise<IResultAuthTokens> {
-        return {
-            userId: payload.sub,
-            username: payload.username,
-        };
-    }
+    // async validate(payload: IAuthToken): Promise<IAuthTokenResponse> {
+    //     const getUserId = payload.sub;
+    //     const getDeviceId = payload.device;
+    //     const getRole = payload.role;
+
+    //     const getSession = await this.projectDbModels.SessionsModels.findOneUserSession(getUserId, getDeviceId);
+    //     const getLastLogin = getSession?.login_at;
+
+    //     if (!getSession || !getLastLogin) {
+    //         throw new ApiUnauthorizedException(['token'], 'token invalid');
+    //     }
+
+    //     return {
+    //         userId: getUserId,
+    //         device: getDeviceId,
+    //         role: getRole,
+    //     };
+    // }
 }

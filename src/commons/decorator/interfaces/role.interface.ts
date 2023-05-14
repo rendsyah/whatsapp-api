@@ -1,5 +1,5 @@
 // Define Role Interfaces
-export enum IRole {
-    User = 'user',
-    Admin = 'admin',
+export enum RoleEnum {
+    User = 'User',
+    Admin = 'Administrator',
 }

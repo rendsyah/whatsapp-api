@@ -1,0 +1,17 @@
+services:
+    app:
+        build: .
+        container_name: template-container
+        ports:
+            - 5000:5000
+        env_file: .env
+        environment:
+            TZ: Asia/Jakarta
+        volumes:
+            - .:/vol/app
+        command: npm run start:dev
+        networks:
+            - shared-networks
+networks:
+    shared-networks:
+        external: true

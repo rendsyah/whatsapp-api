@@ -2,7 +2,7 @@
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { MongooseModuleAsyncOptions, MongooseModuleOptions, MongooseOptionsFactory } from '@nestjs/mongoose';
 
-// Define Mongoose Config Options
+// Define Mongoose Options
 export class MongooseConfig implements MongooseOptionsFactory {
     constructor(private readonly configService: ConfigService) {}
 
@@ -14,6 +14,7 @@ export class MongooseConfig implements MongooseOptionsFactory {
             authSource: this.configService.get('db.SERVICE_MONGO_DB_AUTH'),
             replicaSet: this.configService.get('db.SERVICE_MONGO_DB_REPLICA'),
             retryWrites: true,
+            authMechanism: 'DEFAULT',
             connectTimeoutMS: 30000,
         };
     }

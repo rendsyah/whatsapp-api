@@ -1,6 +1,6 @@
 // Import All Entities
-import { MasterAccess } from './master_access.entity';
+import { Access } from './access.entity';
 import { Users } from './users.entity';
 
-// Define All Project Entities
-export const ProjectDbEntitiesModels = [MasterAccess, Users];
+// Export All Project Entities
+export const ProjectDbEntitiesModels = [Access, Users];

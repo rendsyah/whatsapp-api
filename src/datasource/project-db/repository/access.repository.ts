@@ -7,11 +7,11 @@ import { Repository } from 'typeorm';
 import { BaseRepository } from './base.repository';
 
 // Import Entity
-import { MasterAccess } from '../models/master_access.entity';
+import { Access } from '../models/access.entity';
 
 @Injectable()
-export class AccessRepository extends BaseRepository<MasterAccess> {
-    constructor(@InjectRepository(MasterAccess) private readonly accessModels: Repository<MasterAccess>) {
+export class AccessRepository extends BaseRepository<Access> {
+    constructor(@InjectRepository(Access) private readonly accessModels: Repository<Access>) {
         super(accessModels);
     }
 }

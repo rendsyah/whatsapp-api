@@ -135,7 +135,7 @@ const ApiUnauthorized = () => {
                                 },
                                 detail: {
                                     type: 'string',
-                                    example: 'invalid token',
+                                    example: 'token invalid',
                                 },
                             },
                         },

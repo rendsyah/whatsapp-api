@@ -12,27 +12,27 @@ export class ApiExceptionsFilter implements ExceptionFilter {
     catch(exception: unknown, host: ArgumentsHost): void {
         const { httpAdapter } = this.httpAdapterHost;
 
-        const ctx = host.switchToHttp();
-        const ctxApi = httpAdapter.getRequestUrl(ctx.getRequest());
-        const httpStatus = exception instanceof HttpException ? exception.getStatus() : HttpStatus.INTERNAL_SERVER_ERROR;
+        const getContext = host.switchToHttp();
+        const getContextApi = httpAdapter.getRequestUrl(getContext.getRequest());
+        const getHttpStatus = exception instanceof HttpException ? exception.getStatus() : HttpStatus.INTERNAL_SERVER_ERROR;
 
-        if (httpStatus >= 500) {
-            apiLoggerService.error(`${exception}`, { service: ctxApi });
+        if (getHttpStatus >= 500) {
+            apiLoggerService.error(`${exception}`, { service: getContextApi });
         }
 
-        const responseServiceError = {
-            statusCode: httpStatus,
+        const getResponse = {
+            statusCode: getHttpStatus,
             message: 'API_SERVER_ERROR',
             errors: [
                 {
-                    path: ctxApi,
+                    path: getContextApi,
                     timestamp: new Date().toISOString(),
                 },
             ],
         };
 
-        const responseBody = exception instanceof HttpException ? exception.getResponse() : responseServiceError;
+        const responseBody = exception instanceof HttpException ? exception.getResponse() : getResponse;
 
-        httpAdapter.reply(ctx.getResponse(), responseBody, httpStatus);
+        httpAdapter.reply(getContext.getResponse(), responseBody, getHttpStatus);
     }
 }

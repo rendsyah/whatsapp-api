@@ -2,7 +2,6 @@
 dist
 node_modules
 migrations
-datasource.config.json
 
 # dependency
 package-lock.json
