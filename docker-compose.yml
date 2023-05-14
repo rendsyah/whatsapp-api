@@ -9,7 +9,6 @@ services:
             TZ: Asia/Jakarta
         volumes:
             - .:/vol/app
-        command: npm run start:dev
         networks:
             - shared-networks
 networks:
