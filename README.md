@@ -32,6 +32,26 @@
 $ npm install
 ```
 
+## Configuration
+
+```bash
+# environment
+$ cp .env.example .env
+```
+
+## Migration
+
+```bash
+# generate migration
+$ npm run migration:generate
+
+# run migration
+$ npm run migration:run
+
+# revert migration
+$ npm run migration:revert
+```
+
 ## Running the app
 
 ```bash
@@ -64,9 +84,9 @@ Nest is an MIT-licensed open source project. It can grow thanks to the sponsors 
 
 ## Stay in touch
 
-- Author - [Kamil Myśliwiec](https://kamilmysliwiec.com)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
+-   Author - [Kamil Myśliwiec](https://kamilmysliwiec.com)
+-   Website - [https://nestjs.com](https://nestjs.com/)
+-   Twitter - [@nestframework](https://twitter.com/nestframework)
 
 ## License
 
