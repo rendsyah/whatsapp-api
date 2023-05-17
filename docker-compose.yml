@@ -1,9 +1,9 @@
 services:
     app:
         build: .
-        container_name: template-container
+        container_name: whatsapp-api-container
         ports:
-            - 5000:5000
+            - 5008:5008
         env_file: .env
         environment:
             TZ: Asia/Jakarta

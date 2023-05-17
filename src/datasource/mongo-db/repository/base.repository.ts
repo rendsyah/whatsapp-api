@@ -21,6 +21,10 @@ export abstract class BaseRepository<T> {
         return this.entityModels.updateOne(entityFilterQuery, entityUpdateQuery);
     }
 
+    async updateBulk(entityFilterQuery: FilterQuery<T>, entityUpdateQuery: UpdateQuery<T>): Promise<UpdateWriteOpResult> {
+        return this.entityModels.updateMany(entityFilterQuery, entityUpdateQuery);
+    }
+
     async delete(entityFilterQuery: FilterQuery<T>): Promise<unknown> {
         return this.entityModels.deleteOne(entityFilterQuery);
     }

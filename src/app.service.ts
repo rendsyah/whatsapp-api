@@ -9,6 +9,6 @@ export class AppService {
      * @returns Promise<string>
      */
     async getWelcome(): Promise<string> {
-        return 'Welcome to Template API';
+        return 'Welcome to Whatsapp API';
     }
 }

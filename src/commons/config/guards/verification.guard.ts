@@ -2,8 +2,8 @@
 import { CanActivate, ExecutionContext, Injectable } from '@nestjs/common';
 
 // Import Datasource
-import { ProjectDbService } from '@datasource/project-db/project-db.service';
-import { IProjectDbModels } from '@datasource/interfaces/project-db.interface';
+// import { ProjectDbService } from '@datasource/project-db/project-db.service';
+// import { IProjectDbModels } from '@datasource/interfaces/project-db.interface';
 
 // Import Api Exceptions
 import { ApiForbiddenException } from '@commons/exception/api-exception';
@@ -13,11 +13,11 @@ import { apiLoggerService } from '@commons/logger';
 
 @Injectable()
 export class VerificationAuthGuard implements CanActivate {
-    private projectDbModels: IProjectDbModels;
+    // private projectDbModels: IProjectDbModels;
 
-    constructor(private readonly projectDbService: ProjectDbService) {
-        this.projectDbModels = this.projectDbService.getModels();
-    }
+    // constructor(private readonly projectDbService: ProjectDbService) {
+    //     this.projectDbModels = this.projectDbService.getModels();
+    // }
 
     async canActivate(context: ExecutionContext): Promise<boolean> {
         // const getRequest = context.switchToHttp().getRequest();

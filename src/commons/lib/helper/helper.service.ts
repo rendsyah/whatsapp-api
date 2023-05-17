@@ -95,15 +95,15 @@ export class HelperService {
         switch (type) {
             case '08':
                 if (checkPhone === '08') {
-                    return request;
+                    return request + '@c.us';
                 }
-                return request.replace(checkPhone, '0');
+                return request.replace(checkPhone, '0') + '@c.us';
 
             case '62':
                 if (checkPhone === '62') {
-                    return request;
+                    return request + '@c.us';
                 }
-                return request.replace(checkPhone, '628');
+                return request.replace(checkPhone, '628') + '@c.us';
         }
     }
 
@@ -152,11 +152,7 @@ export class HelperService {
         const decodeRequest = Buffer.from(request, 'base64').toString('ascii');
         const splitRequest = decodeRequest.split(':');
 
-        if (splitRequest.length !== 2) {
-            return null;
-        }
-
-        const cryptoIv = Buffer.from(splitRequest.shift(), 'binary');
+        const cryptoIv = Buffer.from(splitRequest?.shift() || '', 'binary');
         const encryptedText = Buffer.from(splitRequest.join(':'), 'base64');
         const decipher = createDecipheriv(
             this.configService.get('app.SERVICE_CRYPTO_ALGORITHM'),

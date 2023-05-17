@@ -25,7 +25,7 @@ async function bootstrap() {
     const SERVICE_DEFAULT_VERSION = configService.get('app.SERVICE_DEFAULT_VERSION');
     const SERVICE_DOCS = configService.get('app.SERVICE_DOCS');
 
-    const setupQueues = await apiSetupQueues(app, []);
+    const setupQueues = await apiSetupQueues(app, ['receive-message', 'send-message']);
 
     app.enableCors();
     app.enableVersioning({

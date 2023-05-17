@@ -5,10 +5,10 @@ import { DocumentBuilder, OpenAPIObject, SwaggerDocumentOptions, SwaggerModule }
 // Define Api Swagger Config
 export const apiSwaggerConfig = async (app: INestApplication): Promise<OpenAPIObject> => {
     const document = new DocumentBuilder()
-        .setTitle('QURBANQU BACKEND API')
-        .setDescription('Qurbanqu Backend API documentation')
+        .setTitle('WHATSAPP API')
+        .setDescription('Whatsapp API documentation')
         .setTermsOfService('http://example.com/terms')
-        .setContact('Developer', 'http://www.example.com/support', 'hextiv@gmail.com')
+        .setContact('Developer', 'http://www.example.com/support', 'example@gmail.com')
         .setVersion('1.0')
         .setLicense('Apache 2.0', 'https://www.apache.org/licenses/LICENSE-2.0.html')
         .addBearerAuth()
