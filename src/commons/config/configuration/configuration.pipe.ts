@@ -9,6 +9,7 @@ const configSchema = Joi.object({
     SERVICE_DEFAULT_VERSION: Joi.string().required(),
     SERVICE_DOCS: Joi.string().allow(''),
     SERVICE_BASE_URL: Joi.string().required(),
+    SERVICE_CONNECT_URL: Joi.string().required(),
     SERVICE_WHATSAPP_NUMBER: Joi.string().required(),
     SERVICE_WHATSAPP_AUTH_CLIENT: Joi.string().required(),
     SERVICE_WHATSAPP_AUTH_PATH: Joi.string().required(),
@@ -40,6 +41,7 @@ const configSchema = Joi.object({
     SERVICE_CRYPTO_ALGORITHM: Joi.string().allow(''),
     SERVICE_CRYPTO_SECRET_KEY: Joi.string().allow(''),
     SERVICE_UPLOAD_PATH: Joi.string().allow(''),
+    SERVICE_DOWNLOAD_PATH: Joi.string().allow(''),
 });
 
 // Export Config Schema

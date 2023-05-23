@@ -40,8 +40,8 @@ export const MultersOptions = (destination: string): MulterOptions => {
             },
         }),
         fileFilter: (req, file, cb) => {
-            if (!(file.fieldname === 'image' && file.originalname.match(/\.(jpe?g|png)$/i))) {
-                return cb(new ApiBadRequestException([file.fieldname], 'image not allowed!'), false);
+            if (!(file.fieldname === 'file' && file.originalname.match(/\.(csv)$/i))) {
+                return cb(new ApiBadRequestException([file.fieldname], 'file not allowed!'), false);
             }
             cb(null, true);
         },
