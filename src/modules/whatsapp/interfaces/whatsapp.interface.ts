@@ -1,19 +1,13 @@
 // Import Modules
-import { Message, MessageId } from 'whatsapp-web.js';
+import { MessageId } from 'whatsapp-web.js';
 
-// Define Whatsapp Receive Message Interface
-export interface IWhatsappReceiveMessage {
+// Define Whatsapp Receive Message Consumer Interface
+export interface IWhatsappReceiveMessageConsumer {
     sender: string;
     name: string;
     message: string;
     photo: string;
-    media: 300;
     rcvdTime: string;
-}
-
-// Define Whatsapp Receive Message Consumer Interface
-export interface IWhatsappReceiveMessageConsumer {
-    message: Message;
 }
 
 // Define Whatsapp Receive Message Response Interface
@@ -25,7 +19,6 @@ export interface IWhatsappReceiveMessageResponse {
 // Define Whatsapp Send Message Consumer Interface
 export interface IWhatsappSendMessageConsumer extends IWhatsappReceiveMessageResponse {
     from: string;
-    sentTime: string;
 }
 
 // Define Whatsapp Send Message Response Interface

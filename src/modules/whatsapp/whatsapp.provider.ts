@@ -10,6 +10,7 @@ export const whatsappProviders = {
         return new Client({
             puppeteer: {
                 headless: true,
+                args: ['--no-sandbox', '--disable-setuid-sandbox'],
             },
             qrMaxRetries: 30000,
             authTimeoutMs: 60000,

@@ -7,27 +7,29 @@ import { Client, Message } from 'whatsapp-web.js';
 import * as qrCode from 'qrcode-terminal';
 import * as fs from 'fs';
 import * as appRoot from 'app-root-path';
+import * as csv from 'fast-csv';
 
 // Import Commons
 import { HelperService } from '@commons/lib/helper/helper.service';
-import { ApiBadRequestException } from '@commons/exception/api-exception';
+import { ApiBadRequestException, ApiNotFoundException } from '@commons/exception/api-exception';
 
 // Import Datasource
 import { MongoDbService } from '@datasource/mongo-db/mongo-db.service';
 import { apiLoggerService } from '@commons/logger';
 
 // Import Dto
-import { WhatsappSendMessageDto } from './dto/whatsapp.dto';
+import { WhatsappBlastMessageDto, WhatsappSendMessageDto } from './dto/whatsapp.dto';
 
 // Import Interfaces
 import { IMongoDbModels } from '@datasource/interfaces/mongo-db.interface';
-import { IWhatsappReceiveMessage, IWhatsappSendMessageConsumer } from './interfaces/whatsapp.interface';
+import { IWhatsappSendMessageConsumer } from './interfaces/whatsapp.interface';
+import { Response } from 'express';
 
 @Injectable()
 export class WhatsappService implements OnModuleInit {
     private readonly whatsappNumber = this.configService.get('app.SERVICE_WHATSAPP_NUMBER');
-    private readonly logger = new Logger('Whatsapp');
     private readonly mongoDbModels: IMongoDbModels;
+    private readonly logger = new Logger('Whatsapp');
 
     constructor(
         @Inject('whatsapp-client') private readonly whatsappClient: Client,
@@ -40,15 +42,18 @@ export class WhatsappService implements OnModuleInit {
         this.mongoDbModels = this.mongoDbService.getModels();
     }
 
+    /**
+     * Handle module init
+     * @publicApi
+     * @returns Promise<void>
+     */
     async onModuleInit(): Promise<void> {
-        this.whatsappClient.initialize();
-
-        this.whatsappClient.on('qr', async (qr): Promise<void> => {
+        this.whatsappClient.on('qr', (qr): void => {
             this.logger.log('Whatsapp QR Code received');
             qrCode.generate(qr, { small: true });
         });
 
-        this.whatsappClient.on('authenticated', async (): Promise<void> => {
+        this.whatsappClient.on('authenticated', (): void => {
             this.logger.log('Whatsapp authentication success');
         });
 
@@ -71,17 +76,25 @@ export class WhatsappService implements OnModuleInit {
             await this._whatsappReceiveStatusMessage(message);
         });
 
-        this.whatsappClient.on('change_state', async (state): Promise<void> => {
+        this.whatsappClient.on('change_state', (state): void => {
             this.logger.warn(`Whatsapp connection ${state.toLowerCase()}`);
         });
 
-        this.whatsappClient.on('disconnected', async (): Promise<void> => {
+        this.whatsappClient.on('disconnected', (): void => {
             this.logger.log('Whatsapp disconnect');
-            await this.whatsappClient.destroy();
-            await this.whatsappClient.initialize();
+            this.whatsappClient.destroy();
+            this.whatsappClient.initialize();
         });
+
+        this.whatsappClient.initialize();
     }
 
+    /**
+     * Handle to get unread message
+     * @privateApi
+     * @param client @interface Client
+     * @returns Promise<void>
+     */
     private async _whatsappReceiveUnreadMessage(client: Client): Promise<void> {
         try {
             const getChats = await client.getChats();
@@ -90,16 +103,22 @@ export class WhatsappService implements OnModuleInit {
                 if (getUnreadCount > 0) {
                     const getUnreadChats = await getChats[index].fetchMessages({ limit: getUnreadCount });
                     for (let index = 0; index < getUnreadChats.length; index++) {
-                        const getChat = getUnreadChats[index];
-                        await this.receiveMessageQueue.add({ message: getChat });
+                        const getMessage = getUnreadChats[index];
+                        await this.whatsappReceiveMessage(getMessage);
                     }
                 }
             }
         } catch (error) {
-            apiLoggerService.error(error, 'WhatsappReceiveUnread');
+            apiLoggerService.error(error, { service: 'unread-message' });
         }
     }
 
+    /**
+     * Handle to get status message
+     * @privateApi
+     * @param message @interface Message
+     * @returns Promise<void>
+     */
     private async _whatsappReceiveStatusMessage(message: Message): Promise<void> {
         try {
             const getSender = this.helperService.validateString(message?.to, 'numeric');
@@ -116,28 +135,44 @@ export class WhatsappService implements OnModuleInit {
                 );
             }
         } catch (error) {
-            apiLoggerService.error(error, 'WhatsappReceiveStatus');
+            apiLoggerService.error(error, { service: 'status-message' });
         }
     }
 
-    async whatsappReceiveMessage(message: Message): Promise<IWhatsappReceiveMessage> {
+    /**
+     * Handle to get message
+     * @publicApi
+     * @param message @interface Message
+     * @returns Promise<void>
+     */
+    async whatsappReceiveMessage(message: Message): Promise<void> {
         try {
-            const getContact = await message?.getContact();
+            const getContact = (await message?.getContact())?.pushname || '';
             const getSender = this.helperService.validateString(message?.from, 'numeric');
-            const getName = this.helperService.validateString(getContact?.pushname, 'emoji');
+            const getName = this.helperService.validateString(getContact, 'emoji');
             const getMessage = message?.body ? message.body : '';
             const getMedia = message?.hasMedia ? await this.whatsappDownloadMedia(message) : '';
             const getRcvdTime = this.helperService.validateTime(new Date(), 'date-time-1');
             const getPlatform = message?.deviceType ? message.deviceType : '';
             const getAck = message?.ack ? message.ack : 0;
 
+            const getUser = await this.mongoDbModels.UsersModels.findOne({ phone: getSender });
+
             if (!getSender || !getPlatform) {
-                await this.whatsappSendMessage({ sender: getSender, message: 'send message failed. please try again...' });
+                await this.sendMessageQueue.add({
+                    sender: getSender,
+                    from: this.whatsappNumber,
+                    message: 'send message failed. please try again...',
+                });
+
                 return;
             }
 
+            if (!getUser) {
+                await this.mongoDbModels.UsersModels.create({ name: getName, phone: getSender });
+            }
+
             await this.mongoDbModels.IncomingModels.create({
-                mediaId: 300,
                 from: getSender,
                 to: this.whatsappNumber,
                 message: getMessage,
@@ -148,19 +183,25 @@ export class WhatsappService implements OnModuleInit {
                 isAck: getAck,
             });
 
-            return {
-                sender: getSender,
-                name: getName,
-                message: getMessage,
-                photo: getMedia,
-                media: 300,
-                rcvdTime: getRcvdTime,
-            };
+            // Uncomment for connect integration
+            // await this.receiveMessageQueue.add({
+            //     sender: getSender,
+            //     name: getName,
+            //     message: getMessage,
+            //     photo: getMedia,
+            //     rcvdTime: getRcvdTime,
+            // });
         } catch (error) {
-            this.logger.error(error, 'WhatsappReceiveMessage');
+            apiLoggerService.error(error, { service: 'receive-message' });
         }
     }
 
+    /**
+     * Handle to download media
+     * @publicApi
+     * @param message @interface Message
+     * @returns Promise<string>
+     */
     async whatsappDownloadMedia(message: Message): Promise<string> {
         try {
             const mediaFile = await message?.downloadMedia();
@@ -188,12 +229,31 @@ export class WhatsappService implements OnModuleInit {
 
             return mediaFilename;
         } catch (error) {
-            this.logger.error(error, 'WhatsappDownloadMedia');
+            apiLoggerService.error(error, { service: 'download-media' });
         }
     }
 
+    /**
+     * Handle to download template
+     * @publicApi
+     * @param res @interface Response
+     * @returns Promise<void>
+     */
+    async whatsappDownloadTemplate(res: Response): Promise<void> {
+        const getFilePath = this.configService.get('app.SERVICE_DOWNLOAD_PATH');
+        const getFileTemplate = `${appRoot}${getFilePath}/template.csv`;
+        const getReadStream = fs.createReadStream(getFileTemplate);
+
+        getReadStream.pipe(res);
+    }
+
+    /**
+     * Handle to send message
+     * @publicApi
+     * @param dto @interface WhatsappSendMessageDto
+     * @returns Promise<string>
+     */
     async whatsappSendMessage(dto: WhatsappSendMessageDto): Promise<string> {
-        const currentDatetime = this.helperService.validateTime(new Date(), 'date-time-1');
         const isRegisteredUser = await this.whatsappClient.isRegisteredUser(dto.sender);
 
         if (!isRegisteredUser) {
@@ -204,11 +264,48 @@ export class WhatsappService implements OnModuleInit {
             from: this.whatsappNumber,
             sender: dto.sender,
             message: dto.message,
-            sentTime: currentDatetime,
         };
 
         await this.sendMessageQueue.add(requestConsumer, { attempts: 10, backoff: 5000, timeout: 30000 });
 
         return 'sending on process';
+    }
+
+    /**
+     * Handle to blast message
+     * @publicApi
+     * @param dto @interface WhatsappBlastMessageDto
+     * @returns Promise<string>
+     */
+    async whatsappBlastMessage(dto: WhatsappBlastMessageDto): Promise<string> {
+        const getTemplate = dto.template;
+        const getPath = dto.file.path;
+        const getTemplateMessage = await this.mongoDbModels.TemplateModels.findOne({ name: getTemplate, status: 1 });
+
+        if (!getTemplateMessage) {
+            throw new ApiNotFoundException(['template'], 'data not found');
+        }
+
+        const getMessage = getTemplateMessage.message;
+
+        fs.createReadStream(getPath)
+            .pipe(csv.parse({ headers: true }))
+            .on('error', (error) => apiLoggerService.error(error))
+            .on('data', async (row) => {
+                const getName = row.name;
+                const getPhone = row.phone;
+                const getReplaceMessage = this.helperService.validateReplaceMessage(getMessage, [getName]);
+
+                const requestConsumer: IWhatsappSendMessageConsumer = {
+                    from: this.whatsappNumber,
+                    sender: getPhone,
+                    message: getReplaceMessage,
+                };
+
+                await this.sendMessageQueue.add(requestConsumer, { attempts: 10, backoff: 5000, timeout: 30000 });
+            })
+            .on('end', (rowCount: number) => apiLoggerService.info(`Parsed ${rowCount} rows`));
+
+        return 'blast on process';
     }
 }

@@ -6,7 +6,7 @@ import * as Joi from 'joi';
 import { ApiValidationPipe } from '@commons/pipe/api-validation';
 
 // Import Dto
-import { WhatsappSendMessageDto } from './dto/whatsapp.dto';
+import { WhatsappBlastMessageDto, WhatsappSendMessageDto } from './dto/whatsapp.dto';
 
 @Injectable()
 export class whatsappSendMessageSchema extends ApiValidationPipe {
@@ -18,6 +18,19 @@ export class whatsappSendMessageSchema extends ApiValidationPipe {
         return Joi.object<WhatsappSendMessageDto>({
             sender: Joi.string().strict(true).regex(new RegExp(/^\d+$/)).min(5).required(),
             message: Joi.string().required(),
+        });
+    }
+}
+
+@Injectable()
+export class whatsappBlastMessageSchema extends ApiValidationPipe {
+    constructor() {
+        super();
+    }
+
+    public buildSchema(): Joi.Schema {
+        return Joi.object<WhatsappBlastMessageDto>({
+            template: Joi.string().required(),
         });
     }
 }

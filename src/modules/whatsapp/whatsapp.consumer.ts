@@ -14,7 +14,6 @@ import { MongoDbService } from '@datasource/mongo-db/mongo-db.service';
 
 // Import Interfaces
 import {
-    IWhatsappReceiveMessage,
     IWhatsappReceiveMessageConsumer,
     IWhatsappReceiveMessageResponse,
     IWhatsappSendMessageConsumer,
@@ -22,44 +21,39 @@ import {
 } from './interfaces/whatsapp.interface';
 import { IMongoDbModels } from '@datasource/interfaces/mongo-db.interface';
 
-// Import Service
-import { WhatsappService } from './whatsapp.service';
-
 @Processor('receive-message')
 export class WhatsappReceiveMessageConsumer {
     constructor(
         @InjectQueue('send-message') private readonly sendMessageQueue: Queue,
         private readonly configService: ConfigService,
         private readonly helperService: HelperService,
-        private readonly whatsappService: WhatsappService,
     ) {}
 
     @Process()
     async receiveMessageQueue(job: Job<IWhatsappReceiveMessageConsumer>): Promise<IWhatsappReceiveMessageResponse> {
-        const { message } = job.data;
-
-        const receivedMessage = await this.whatsappService.whatsappReceiveMessage(message);
+        const { sender, name, message, photo, rcvdTime } = job.data;
 
         const request = {
-            sender: receivedMessage.sender,
-            name: receivedMessage.name,
-            message: this.helperService.validateString(receivedMessage.message, 'encode'),
-            photo: this.helperService.validateString(receivedMessage.photo, 'encode'),
-            media: receivedMessage.media,
-            timestamp: receivedMessage.rcvdTime,
+            sender: sender,
+            name: name,
+            message: this.helperService.validateString(message, 'encode'),
+            photo: this.helperService.validateString(photo, 'encode'),
+            timestamp: rcvdTime,
         };
 
         const connectUrl = this.configService.get('app.SERVICE_CONNECT_URL');
         const response = await axios.post(connectUrl, request);
 
+        const getResponseMessage = response.data.data?.reply || '';
+
         return {
-            sender: receivedMessage.sender,
-            message: response.data?.data?.reply || '',
+            sender: sender,
+            message: getResponseMessage,
         };
     }
 
     @OnQueueCompleted()
-    async receiveMessageCompleted(job: Job<IWhatsappReceiveMessage>, result: IWhatsappReceiveMessageResponse): Promise<void> {
+    async receiveMessageCompleted(job: Job<IWhatsappReceiveMessageConsumer>, result: IWhatsappReceiveMessageResponse): Promise<void> {
         await this.sendMessageQueue.add(result);
     }
 }
@@ -78,17 +72,17 @@ export class WhatsappSendMessageConsumer {
 
     @Process()
     async process(job: Job<IWhatsappSendMessageConsumer>): Promise<IWhatsappSendMessageResponse> {
-        const { from, sender, message, sentTime } = job.data;
+        const { from, sender, message } = job.data;
 
+        const currentDatetime = this.helperService.validateTime(new Date(), 'date-time-1');
         const formatSender = this.helperService.validateReplacePhone(sender, '62');
         const response = await this.whatsappClient.sendMessage(formatSender, message);
         await this.mongoDbModels.OutgoingModels.create({
-            mediaId: 300,
             from: from,
             to: sender,
             message: message,
             attachment: '',
-            sentTime: sentTime,
+            sentTime: currentDatetime,
             isAck: 0,
             status: 'pending',
         });

@@ -9,3 +9,12 @@ export class WhatsappSendMessageDto {
     @ApiProperty({ default: 'hallo' })
     message: string;
 }
+
+// Define Whatsapp Blast Message Dto
+export class WhatsappBlastMessageDto {
+    @ApiProperty({ default: 'example' })
+    template: string;
+
+    @ApiProperty({ type: 'file' })
+    file: Express.Multer.File;
+}
