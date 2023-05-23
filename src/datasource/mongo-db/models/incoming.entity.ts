@@ -8,9 +8,6 @@ export type IncomingDocument = HydratedDocument<Incoming>;
 @Schema({ collection: 'incoming', timestamps: true })
 export class Incoming {
     @Prop({ isRequired: true })
-    mediaId: number;
-
-    @Prop({ isRequired: true })
     from: string;
 
     @Prop({ isRequired: true })

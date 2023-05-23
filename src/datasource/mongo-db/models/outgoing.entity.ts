@@ -8,9 +8,6 @@ export type OutgoingDocument = HydratedDocument<Outgoing>;
 @Schema({ collection: 'outgoing', timestamps: true })
 export class Outgoing {
     @Prop({ isRequired: true })
-    mediaId: number;
-
-    @Prop({ isRequired: true })
     from: string;
 
     @Prop({ isRequired: true })

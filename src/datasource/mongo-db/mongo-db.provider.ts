@@ -1,5 +1,5 @@
 // Import All Repository
-import { IncomingRepository, OutgoingRepository, UsersRepository } from './repository';
+import { IncomingRepository, OutgoingRepository, TemplateRepository, UsersRepository } from './repository';
 
 // Define All Mongo DB Providers
-export const MongoDbProviders = [IncomingRepository, OutgoingRepository, UsersRepository];
+export const MongoDbProviders = [IncomingRepository, OutgoingRepository, TemplateRepository, UsersRepository];

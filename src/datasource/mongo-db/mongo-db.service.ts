@@ -5,7 +5,7 @@ import { Injectable } from '@nestjs/common';
 import { IMongoDbModels } from '@datasource/interfaces/mongo-db.interface';
 
 // Import Repository
-import { IncomingRepository, OutgoingRepository } from './repository';
+import { IncomingRepository, OutgoingRepository, TemplateRepository } from './repository';
 import { UsersRepository } from './repository/users.repository';
 
 @Injectable()
@@ -13,6 +13,7 @@ export class MongoDbService {
     constructor(
         private readonly incomingRepository: IncomingRepository,
         private readonly outgoingRepository: OutgoingRepository,
+        private readonly templateRepository: TemplateRepository,
         private readonly usersRepository: UsersRepository,
     ) {}
 
@@ -20,6 +21,7 @@ export class MongoDbService {
         return {
             IncomingModels: this.incomingRepository,
             OutgoingModels: this.outgoingRepository,
+            TemplateModels: this.templateRepository,
             UsersModels: this.usersRepository,
         };
     }
